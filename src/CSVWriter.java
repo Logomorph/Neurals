@@ -2,6 +2,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import data.DataSet;
+import data.DataSetRow;
+
 
 public class CSVWriter {
 	PrintWriter out;
@@ -15,6 +18,32 @@ public class CSVWriter {
 	public void WriteLine(double[] data) {
 		for (double d : data) {
 			out.print(d+",");
+		}
+		out.print("\n");
+	}
+	
+	public void WriteDataSet(DataSet ds) {
+		for(DataSetRow dsr : ds.GetRows()) {
+			for(double d : dsr.inputData)
+				out.print(d+",");
+			for(double d : dsr.outputData)
+				out.print(d+",");
+		}
+		out.print("\n");
+	}
+	
+	public void WriteDataSetInput(DataSet ds) {
+		for(DataSetRow dsr : ds.GetRows()) {
+			for(double d : dsr.inputData)
+				out.print(d+",");
+		}
+		out.print("\n");
+	}
+	
+	public void WriteDataSetOutput(DataSet ds) {
+		for(DataSetRow dsr : ds.GetRows()) {
+			for(double d : dsr.outputData)
+				out.print(d+",");
 		}
 		out.print("\n");
 	}

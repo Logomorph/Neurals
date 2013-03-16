@@ -1,9 +1,10 @@
 package transfer;
 
-abstract public class TransferFunction {
+import java.io.Serializable;
+
+abstract public class TransferFunction implements Serializable {
+	private static final long serialVersionUID = 1L;
 	abstract public double Process(double in);
 	
-	public double getDerivative(double in) {
-		return 1d;
-	}
+	abstract public double getDerivative(double in);
 }

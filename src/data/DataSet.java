@@ -25,4 +25,7 @@ public class DataSet {
 	public DataSetRow GetRow(int index) {
 		return rows.get(index);
 	}
+	public List<DataSetRow> GetRows() {
+		return rows;
+	}
 }

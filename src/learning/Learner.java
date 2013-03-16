@@ -91,6 +91,8 @@ public class Learner {
 			for(Neuron n:layers.get(i).getNeurons()) {
 				double nError = calculateHiddenNeuronError(n);
 				n.setError(nError);
+				if(n.isAdaptive())
+					n.Train();
 				this.updateNeuronWeights(n);
 			}
 		}

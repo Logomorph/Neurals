@@ -1,8 +1,10 @@
 package neuralnet;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class Link {
+public class Link implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public Neuron start,end;
 	public double weight;
 	

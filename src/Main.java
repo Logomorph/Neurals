@@ -1,4 +1,5 @@
 import patterns.SineWave;
+import utils.Util;
 import learning.Learner;
 import data.DataSet;
 import data.DataSetRow;
@@ -19,17 +20,19 @@ public class Main {
 	static double[] out4 = { 0 };
 
 	static CSVWriter csvw = new CSVWriter();
+
 	public static void main(String[] args) {
 		try {
-			
+
 			csvw.OpenFile("out.csv");
 
-			Layer in = new Layer(3);
-			Layer hidden = new Layer(2);
-			Layer out = new Layer(1);
+			//create the network
+			Layer in = new Layer(3, false);
+			Layer hidden = new Layer(2, true);
+			Layer out = new Layer(1, false);
 
-			connectLayers(in, hidden);
-			connectLayers(hidden, out);
+			in.connectLayers(hidden);
+			hidden.connectLayers(out);
 
 			Network net = new Network();
 			net.addLayer(in);
@@ -38,115 +41,85 @@ public class Main {
 			net.setInputNeurons(in.neurons);
 			net.setOutputNeurons(out.neurons);
 
-			/*
-			csvw.WriteLine(in1);
-			net.setInput(in1);
-			net.Process();
-			csvw.WriteLine(net.getOutput());
-			
-			csvw.WriteLine(in2);
-			net.setInput(in2);
-			net.Process();
-			csvw.WriteLine(net.getOutput());
 
-			csvw.WriteLine(in3);
-			net.setInput(in3);
-			net.Process();
-			csvw.WriteLine(net.getOutput());
-
-			csvw.WriteLine(in4);
-			net.setInput(in4);
-			net.Process();
-			csvw.WriteLine(net.getOutput());*/
-
+			//train the network with sine data set
 			System.out.println("Started training\n\n");
 			DataSet ds = createSineWaveDataSet();
-			Learner l = new Learner(net, 0.7);
+			Learner l = new Learner(net, 0.8);
 
-			for (int i = 0; i < 50; i++)
+			for (int i = 0; i < 500; i++)
 				l.TrainNetwork(ds);
 			System.out.println("Done training\n\n");
-			
 
-			double[] outData = new double[1000];
-			for(int i=0;i<ds.GetRowCount();i++) {
-				net.setInput(ds.GetRow(i).inputData);
+			Util.usage[0] = Util.usage[1] = Util.usage[2] = 0;
+			//test the network with a straight line
+			DataSet lineDs = createLineDataSet(0.001d);
+			csvw.WriteDataSetOutput(lineDs);
+			double[] outData = new double[10];
+			for (int i = 0; i < lineDs.GetRowCount(); i++) {
+				net.setInput(lineDs.GetRow(i).inputData);
 				net.Process();
 				outData[i] = net.getOutput()[0];
 			}
 			csvw.WriteLine(outData);
 
-			/*csvw.WriteLine(in1);
-			net.setInput(in1);
-			net.Process();
-			csvw.WriteLine(net.getOutput());
-
-			csvw.WriteLine(in2);
-			net.setInput(in2);
-			net.Process();
-			csvw.WriteLine(net.getOutput());
-
-			csvw.WriteLine(in3);
-			net.setInput(in3);
-			net.Process();
-			csvw.WriteLine(net.getOutput());
-
-			csvw.WriteLine(in4);
-			net.setInput(in4);
-			net.Process();
-			csvw.WriteLine(net.getOutput());*/
 
 			csvw.CloseFile();
 			System.out.println("Done");
+			System.out.println(Util.usage[0] + "-" + Util.usage[1] + "-"
+					+ Util.usage[2]);
+
+			// Util.WriteNetwork(net, "network.net");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		/*
-		 * double[] arr = {1,2,3,4}; CSVWriter csvw = new CSVWriter();
-		 * 
-		 * try { csvw.OpenFile("out.csv"); csvw.WriteLine(arr);
-		 * csvw.WriteLine(arr); csvw.CloseFile(); } catch (Exception e) {
-		 * e.printStackTrace(); }
-		 */
 	}
-
-	private static void connectLayers(Layer l1, Layer l2) {
-		// forward
-		for (int i = 0; i < l2.neurons.size(); i++) {
-			for (int j = 0; j < l1.neurons.size(); j++) {
-				l2.neurons.get(i).addInputLink(l1.neurons.get(j));
-			}
-		}
-		// backward
-		for (int i = 0; i < l1.neurons.size(); i++) {
-			for (int j = 0; j < l2.neurons.size(); j++) {
-				l1.neurons.get(i).addOutputLink(l2.neurons.get(j));
-			}
-		}
-	}
-
+	
 	private static DataSet createSineWaveDataSet() {
 		DataSet ds = new DataSet();
 		SineWave swg = new SineWave();
 		double[] data = swg.GeneratePattern(0.0d);
 		csvw.WriteLine(data);
-		
-		for(int i=0;i<data.length-4;i++) {
+
+		for (int i = 0; i < data.length - 4; i++) {
 			DataSetRow dsr = new DataSetRow();
 			double[] inp = new double[3];
 			inp[0] = data[i];
-			inp[1] = data[i+1];
-			inp[2] = data[i+2];
+			inp[1] = data[i + 1];
+			inp[2] = data[i + 2];
 			double[] outp = new double[1];
-			outp[0] = data[i+3];
-			
+			outp[0] = data[i + 3];
+
 			dsr.inputData = inp;
 			dsr.outputData = outp;
 			ds.AddRow(dsr);
 		}
 		return ds;
 	}
-	private static DataSet createDataSet() {
+	
+	private static DataSet createLineDataSet(double dec) {
+		DataSet ds = new DataSet();
+		double start = 0.7d;
+		
+		for (int i = 0; i < 10; i++) {
+			DataSetRow dsr = new DataSetRow();
+			double[] inp = new double[3];
+			inp[0] = start;
+			inp[1] = start+dec;
+			inp[2] = start+dec*2;
+			double[] outp = new double[1];
+			outp[0] = start+dec*3;
+			
+			start+=dec*4;
+
+			dsr.inputData = inp;
+			dsr.outputData = outp;
+			ds.AddRow(dsr);
+		}
+		return ds;
+	}
+
+	private static DataSet createDataSetXOR() {
 		DataSet data = new DataSet();
 
 		{

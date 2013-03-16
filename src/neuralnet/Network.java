@@ -1,9 +1,11 @@
 package neuralnet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Network {
+public class Network implements Serializable {
+	private static final long serialVersionUID = 1L;
 	List<Layer> layers;
 	List<Neuron> inputNeurons;
 	List<Neuron> outputNeurons;

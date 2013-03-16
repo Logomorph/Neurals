@@ -1,19 +1,21 @@
 package neuralnet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Layer {
+public class Layer implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public List<Neuron> neurons;
 
 	public Layer() {
 		neurons = new ArrayList<Neuron>();
 	}
 	
-	public Layer(int neuronsCount) {
+	public Layer(int neuronsCount, boolean auto_pick) {
 		neurons = new ArrayList<Neuron>();
 		for(int i=0;i<neuronsCount;i++) {
-			Neuron n = new Neuron();
+			Neuron n = new Neuron(auto_pick);
 			neurons.add(n);
 		}
 	}
@@ -49,6 +51,23 @@ public class Layer {
 	public void RandomizeWeights() {
 		for(Neuron neuron : this.neurons) {
 			neuron.RandomizeWeights();
+		}
+	}
+
+	public void connectLayers(Layer next_layer) {
+		// forward
+		for (int i = 0; i < next_layer.neurons.size(); i++) {
+			for (int j = 0; j < this.neurons.size(); j++) {
+				next_layer.neurons.get(i).addInputLink(this.neurons.get(j));
+			}
+			next_layer.neurons.get(i).PostInit();
+		}
+		// backward
+		for (int i = 0; i < this.neurons.size(); i++) {
+			for (int j = 0; j < next_layer.neurons.size(); j++) {
+				this.neurons.get(i).addOutputLink(next_layer.neurons.get(j));
+			}
+			this.neurons.get(i).PostInit();
 		}
 	}
 }

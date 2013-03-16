@@ -4,6 +4,7 @@ import input.InputFunction;
 import input.WeightedSum;
 
 import java.awt.event.InputEvent;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,26 +12,34 @@ import transfer.Log;
 import transfer.Sigmoid;
 import transfer.Sin;
 import transfer.TransferFunction;
+import transfer.TransferFunctionPicker;
 
-public class Neuron {
-	public Layer parentLayer;
+public class Neuron implements Serializable {
 	public List<Link> inLinks;
 	public List<Link> outLinks;
 	
 	TransferFunction transferFunc;
 	InputFunction inputFunc;
+	TransferFunctionPicker tfp;
 	
 	// stuff
 	private double output;
 	private double netInput=0;
 	private double error;
 	
-	public Neuron() {
-		parentLayer = null;
+	// for adaptive transfer functions;
+	private double desiredOutput;
+	private boolean auto_pick;
+	
+	public Neuron(boolean auto_pick) {
 		inLinks = new ArrayList<Link>();
 		outLinks = new ArrayList<Link>();
-		transferFunc = new Sigmoid();
+		transferFunc = new Sin();
 		inputFunc = new WeightedSum();
+		this.auto_pick = auto_pick;
+		if(auto_pick) {
+			tfp = new TransferFunctionPicker();
+		}
 	}
 	
 	public void reset() {
@@ -54,6 +63,14 @@ public class Neuron {
 		return output;
 	}
 	
+	public void setDesiredOutput(double output) {
+		this.desiredOutput = output;
+	}
+	
+	public double getDesiredOutput() {
+		return desiredOutput;
+	}
+	
 	public void setError(double error) {
 		this.error = error;
 	}
@@ -69,22 +86,44 @@ public class Neuron {
 	public List<Link> getOutputLinks() {
 		return outLinks;
 	}
+	
+	public void PostInit() {
+		if(auto_pick)
+			tfp.InitNeuralNet(inLinks.size());
+	}
+	
+	public boolean isAdaptive() {
+		return auto_pick;
+	}
+	
+	// For adaptive transfer functions
+	public void Train() {
+		tfp.Train(this.inLinks, netInput, this.output + this.error);
+	}
 
 	/**
 	 * Calculates neuron's output
 	 */
 	public void Process() {
-		if ((this.inLinks.size() > 0)) {
+		if (auto_pick) {
+			assert(this.inLinks.size() > 0);
+			
 			this.netInput = this.inputFunc.Process(this.inLinks);
-			//System.out.println("[Neuron] Net input: " + this.netInput);
-		}
 
-		this.output = this.transferFunc.Process(this.netInput);
-		//System.out.println("[Neuron] Output: " + this.output);
+			this.output = tfp.Pick(this.inLinks).Process(this.netInput);
+		} else {
+			if ((this.inLinks.size() > 0)) {
+				this.netInput = this.inputFunc.Process(this.inLinks);
+				// System.out.println("[Neuron] Net input: " + this.netInput);
+			}
+
+			this.output = this.transferFunc.Process(this.netInput);
+		}
+		// System.out.println("[Neuron] Output: " + this.output);
 	}
-	
+
 	public boolean hasInputs() {
-		return (inLinks.size() != 0);
+		return inLinks.size() != 0;
 	}
 	
 	public void addInputLink(Neuron in) {
