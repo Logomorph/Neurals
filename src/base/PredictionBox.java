@@ -45,7 +45,7 @@ public class PredictionBox {
 		mipsNet.setInput(inMips);
 		mipsNet.Process();
 
-		resourceDemand[Resource.MIPS.getIndex()] = (int) (mipsNet.getOutput()[0] * resourceCapacity[Resource.MIPS.getIndex()]);
+		resourceDemand[Resource.MIPS.getIndex()] = (int) (mipsNet.getOutput()[0] * vm.MIPS_MAX);
 		
 		// CORES NN
 		double[] inCores = { CORES_data[index - 2], CORES_data[index - 1],
@@ -53,7 +53,7 @@ public class PredictionBox {
 		coresNet.setInput(inCores);
 		coresNet.Process();
 
-		resourceDemand[Resource.CORES.getIndex()] = (int) (coresNet.getOutput()[0] * resourceCapacity[Resource.CORES.getIndex()]);
+		resourceDemand[Resource.CORES.getIndex()] = (int) (coresNet.getOutput()[0] * vm.CORES_MAX);
 		
 		// RAM NN
 		double[] inRam = { RAM_data[index - 2], RAM_data[index - 1],
@@ -61,7 +61,7 @@ public class PredictionBox {
 		ramNet.setInput(inRam);
 		ramNet.Process();
 
-		resourceDemand[Resource.RAM.getIndex()] = (int) (ramNet.getOutput()[0] * resourceCapacity[Resource.RAM.getIndex()]);
+		resourceDemand[Resource.RAM.getIndex()] = (int) (ramNet.getOutput()[0] * vm.RAM_MAX);
 		
 		// STORAGE NN
 		double[] inStorage = { STORAGE_data[index - 2], STORAGE_data[index - 1],
@@ -69,7 +69,7 @@ public class PredictionBox {
 		storeNet.setInput(inStorage);
 		storeNet.Process();
 
-		resourceDemand[Resource.STORAGE.getIndex()] = (int) (storeNet.getOutput()[0] * resourceCapacity[Resource.STORAGE.getIndex()]);
+		resourceDemand[Resource.STORAGE.getIndex()] = (int) (storeNet.getOutput()[0] * vm.STORAGE_MAX);
 		
 		// BANDWIDTH NN
 		double[] inBw = { BANDWIDTH_data[index - 2], BANDWIDTH_data[index - 1],
@@ -77,7 +77,7 @@ public class PredictionBox {
 		bwNet.setInput(inBw);
 		bwNet.Process();
 
-		resourceDemand[Resource.BANDWIDTH.getIndex()] = (int) (bwNet.getOutput()[0] * resourceCapacity[Resource.BANDWIDTH.getIndex()]);
+		resourceDemand[Resource.BANDWIDTH.getIndex()] = (int) (bwNet.getOutput()[0] * vm.BANDWIDTH_MAX);
 		
 		this.vm.setResourceDemand(resourceDemand);
 		
