@@ -1,18 +1,19 @@
 package neuralnet;
 
-import input.InputFunction;
-import input.WeightedSum;
 
 import java.awt.event.InputEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import transfer.Log;
-import transfer.Sigmoid;
-import transfer.Sin;
-import transfer.TransferFunction;
-import transfer.TransferFunctionPicker;
+import nn_input.InputFunction;
+import nn_input.WeightedSum;
+import nn_transfer.Log;
+import nn_transfer.Sigmoid;
+import nn_transfer.Sin;
+import nn_transfer.TransferFunction;
+import nn_transfer.TransferFunctionPicker;
+
 
 public class Neuron implements Serializable {
 	public List<Link> inLinks;

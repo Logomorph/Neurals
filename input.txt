@@ -1,0 +1,11 @@
+5 9 //number of bins / number of items
+10000 24 50 1024 10 //bin resources - MIPS, cores, RAM, storage bandwidth
+2000 2 4 200 1
+1000 2 4 200 1
+2000 2 4 200 1
+5000 2 4 200 1
+4000 2 4 200 1
+4000 2 4 200 1
+4000 2 4 200 1
+2000 2 4 200 1
+5000 2 4 200 1

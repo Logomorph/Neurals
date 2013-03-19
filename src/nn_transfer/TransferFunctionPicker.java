@@ -1,19 +1,19 @@
-package transfer;
+package nn_transfer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import learning.Learner;
 
-import data.DataSet;
-import data.DataSetRow;
 
-import utils.Util;
+import util.Util;
 
 import neuralnet.Layer;
 import neuralnet.Link;
 import neuralnet.Network;
+import nn_data.DataSet;
+import nn_data.DataSetRow;
+import nn_learning.Learner;
 
 public class TransferFunctionPicker implements Serializable{
 	private static final long serialVersionUID = 1L;

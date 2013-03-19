@@ -1,4 +1,4 @@
-package input;
+package nn_input;
 
 import java.io.Serializable;
 import java.util.List;

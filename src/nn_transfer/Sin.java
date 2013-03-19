@@ -1,4 +1,4 @@
-package transfer;
+package nn_transfer;
 
 public class Sin extends TransferFunction {
 

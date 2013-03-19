@@ -1,9 +1,10 @@
+package util;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import data.DataSet;
-import data.DataSetRow;
+import nn_data.DataSet;
+import nn_data.DataSetRow;
 
 
 public class CSVWriter {

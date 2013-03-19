@@ -1,8 +1,8 @@
-package patterns;
+package nn_patterns;
 
 import java.util.Random;
 
-import utils.Util;
+import util.Util;
 
 public class SineWave extends PatternGenerator {
 

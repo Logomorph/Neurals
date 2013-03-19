@@ -1,4 +1,4 @@
-package input;
+package nn_input;
 
 import java.util.List;
 

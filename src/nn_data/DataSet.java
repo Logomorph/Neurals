@@ -1,4 +1,4 @@
-package data;
+package nn_data;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,14 +1,14 @@
-package learning;
+package nn_learning;
 
 import java.util.List;
 
-import transfer.TransferFunction;
-import data.DataSet;
-import data.DataSetRow;
 import neuralnet.Layer;
 import neuralnet.Link;
 import neuralnet.Network;
 import neuralnet.Neuron;
+import nn_data.DataSet;
+import nn_data.DataSetRow;
+import nn_transfer.TransferFunction;
 
 public class Learner {
 	Network network;

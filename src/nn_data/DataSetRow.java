@@ -1,4 +1,4 @@
-package data;
+package nn_data;
 
 public class DataSetRow {
 	public double[] inputData;
