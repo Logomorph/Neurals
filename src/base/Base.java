@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+
 import util.InputReader;
 
 import aco.ACOAlgorithm;
@@ -18,8 +20,14 @@ public class Base {
 	private List<Item> items;
 	private List<PredictionBox> pboxes;
 	private int epoch;
+	private PredictionQueue itemsQueue;
+	
+
+	private static int PREDICTION_INTERVAL = 3000; // ms
 	
 	public Base() {		
+		itemsQueue = new PredictionQueue();
+		
 		LinkedList<Integer> numbers = (LinkedList<Integer>) InputReader.readData();
 
 		ACOAlgorithm.NB_OF_BINS = numbers.get(0);
@@ -64,7 +72,7 @@ public class Base {
 			public void run() {
 				Update();
 			}
-		}, 2 * 1000, 3 * 1000);
+		}, 2 * 1000, PREDICTION_INTERVAL);
 	}
 
 	public void Stop() {
@@ -82,9 +90,10 @@ public class Base {
 			pboxes.get(i).Update();
 			items.set(i, pboxes.get(i).getItem());
 		}
+		itemsQueue.add(items);
 		
 		// run the algorithm
-		aco.setItems(items);
+		aco.setItems(itemsQueue.popFront());
 		aco.init();
 		aco.run();
 		epoch++;
