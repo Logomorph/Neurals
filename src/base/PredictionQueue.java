@@ -34,4 +34,7 @@ public class PredictionQueue {
 		qi.remove(0);
 		return buff;
 	}
+	public synchronized boolean hasItems(){
+		return qi.size() > 0;
+	}
 }

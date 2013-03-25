@@ -32,10 +32,10 @@ public class Neuron implements Serializable {
 	private double desiredOutput;
 	private boolean auto_pick;
 	
-	public Neuron(boolean auto_pick) {
+	public Neuron(TransferFunction tf, boolean auto_pick) {
 		inLinks = new ArrayList<Link>();
 		outLinks = new ArrayList<Link>();
-		transferFunc = new Sin();
+		transferFunc = tf; // new Sin();
 		inputFunc = new WeightedSum();
 		this.auto_pick = auto_pick;
 		if(auto_pick) {

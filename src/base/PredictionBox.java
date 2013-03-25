@@ -6,6 +6,7 @@ import neuralnet.Layer;
 import neuralnet.Network;
 import nn_data.DataSetRow;
 import nn_patterns.SineWave;
+import nn_transfer.Sin;
 import aco_entities.Item;
 import aco_entities.Resource;
 
@@ -24,6 +25,7 @@ public class PredictionBox {
 	double[] BANDWIDTH_data;
 
 	int index;
+	boolean hasData;
 
 	// stuff for prediction
 	Network mipsNet, coresNet, ramNet, storeNet, bwNet;
@@ -33,12 +35,13 @@ public class PredictionBox {
 		this.resourceCapacity = resourceCapacity;
 		populateData();
 		createNeuralNets();
+		hasData = true;
 	}
 
 	// Update all the neural networks and the Item
 	public void Update() {
 		int[] resourceDemand = new int[Resource.values().length];
-		
+
 		// MIPS NN
 		double[] inMips = { MIPS_data[index - 2], MIPS_data[index - 1],
 				MIPS_data[index] };
@@ -46,7 +49,7 @@ public class PredictionBox {
 		mipsNet.Process();
 
 		resourceDemand[Resource.MIPS.getIndex()] = (int) (mipsNet.getOutput()[0] * vm.MIPS_MAX);
-		
+
 		// CORES NN
 		double[] inCores = { CORES_data[index - 2], CORES_data[index - 1],
 				CORES_data[index] };
@@ -54,7 +57,7 @@ public class PredictionBox {
 		coresNet.Process();
 
 		resourceDemand[Resource.CORES.getIndex()] = (int) (coresNet.getOutput()[0] * vm.CORES_MAX);
-		
+
 		// RAM NN
 		double[] inRam = { RAM_data[index - 2], RAM_data[index - 1],
 				RAM_data[index] };
@@ -62,30 +65,41 @@ public class PredictionBox {
 		ramNet.Process();
 
 		resourceDemand[Resource.RAM.getIndex()] = (int) (ramNet.getOutput()[0] * vm.RAM_MAX);
-		
+
 		// STORAGE NN
-		double[] inStorage = { STORAGE_data[index - 2], STORAGE_data[index - 1],
-				STORAGE_data[index] };
+		double[] inStorage = { STORAGE_data[index - 2],
+				STORAGE_data[index - 1], STORAGE_data[index] };
 		storeNet.setInput(inStorage);
 		storeNet.Process();
 
-		resourceDemand[Resource.STORAGE.getIndex()] = (int) (storeNet.getOutput()[0] * vm.STORAGE_MAX);
-		
+		resourceDemand[Resource.STORAGE.getIndex()] = (int) (storeNet
+				.getOutput()[0] * vm.STORAGE_MAX);
+
 		// BANDWIDTH NN
 		double[] inBw = { BANDWIDTH_data[index - 2], BANDWIDTH_data[index - 1],
 				BANDWIDTH_data[index] };
 		bwNet.setInput(inBw);
 		bwNet.Process();
 
-		resourceDemand[Resource.BANDWIDTH.getIndex()] = (int) (bwNet.getOutput()[0] * vm.BANDWIDTH_MAX);
-		
+		resourceDemand[Resource.BANDWIDTH.getIndex()] = (int) (bwNet
+				.getOutput()[0] * vm.BANDWIDTH_MAX);
+
 		this.vm.setResourceDemand(resourceDemand);
-		
-		index++;
+
+		if(index < MIPS_data.length) {
+			hasData = true;
+			index++;
+		} else {
+			hasData = false;
+		}
 	}
 
 	public Item getItem() {
 		return this.vm;
+	}
+	
+	public boolean hasData() {
+		return this.hasData;
 	}
 
 	// all this is temporary
@@ -96,7 +110,7 @@ public class PredictionBox {
 		RAM_data = swg.GeneratePattern(0);
 		STORAGE_data = swg.GeneratePattern(0);
 		BANDWIDTH_data = swg.GeneratePattern(0);
-		index= 2;
+		index = 2;
 	}
 
 	private void createNeuralNets() {
@@ -109,9 +123,9 @@ public class PredictionBox {
 
 	private Network createAndTrainNetwork(double[] data) {
 		// create the network
-		Layer in = new Layer(3, false);
-		Layer hidden = new Layer(2, false);
-		Layer out = new Layer(1, false);
+		Layer in = new Layer(3, new Sin(), false);
+		Layer hidden = new Layer(2, new Sin(), false);
+		Layer out = new Layer(1, new Sin(), false);
 
 		in.connectLayers(hidden);
 		hidden.connectLayers(out);
@@ -141,11 +155,11 @@ public class PredictionBox {
 		for (int i = 0; i < data.length - 4; i++) {
 			DataSetRow dsr = new DataSetRow();
 			double[] inp = new double[3];
-			inp[0] = data[i] >=0 ? data[i] : 0;
-			inp[1] = data[i + 1] >=0 ? data[i+1] : 0;
-			inp[2] = data[i + 2] >=0 ? data[i+2] : 0;
+			inp[0] = data[i] >= 0 ? data[i] : 0;
+			inp[1] = data[i + 1] >= 0 ? data[i + 1] : 0;
+			inp[2] = data[i + 2] >= 0 ? data[i + 2] : 0;
 			double[] outp = new double[1];
-			outp[0] = data[i + 3] >=0 ? data[i+3] : 0;
+			outp[0] = data[i + 3] >= 0 ? data[i + 3] : 0;
 
 			dsr.inputData = inp;
 			dsr.outputData = outp;

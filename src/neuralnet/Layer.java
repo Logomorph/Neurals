@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import nn_transfer.TransferFunction;
+
 public class Layer implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public List<Neuron> neurons;
@@ -12,10 +14,10 @@ public class Layer implements Serializable {
 		neurons = new ArrayList<Neuron>();
 	}
 	
-	public Layer(int neuronsCount, boolean auto_pick) {
+	public Layer(int neuronsCount, TransferFunction tf, boolean auto_pick) {
 		neurons = new ArrayList<Neuron>();
 		for(int i=0;i<neuronsCount;i++) {
-			Neuron n = new Neuron(auto_pick);
+			Neuron n = new Neuron(tf, auto_pick);
 			neurons.add(n);
 		}
 	}

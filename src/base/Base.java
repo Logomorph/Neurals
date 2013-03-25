@@ -16,14 +16,15 @@ import aco_entities.Resource;
 
 public class Base {
 	private final static ACOAlgorithm aco = new ACOAlgorithm();
-	private Timer timer;
+	private Timer predictionTimer, acoTimer;
 	private List<Item> items;
 	private List<PredictionBox> pboxes;
-	private int epoch;
+	private int predEpoch,acoEpoch;
 	private PredictionQueue itemsQueue;
 	
 
-	private static int PREDICTION_INTERVAL = 3000; // ms
+	private static int PREDICTION_INTERVAL = 10000; // ms
+	private static int ACO_INTERVAL = 3000; // ms
 	
 	public Base() {		
 		itemsQueue = new PredictionQueue();
@@ -62,27 +63,38 @@ public class Base {
 			PredictionBox pboxBuff = new PredictionBox(i, resourceCapacity);
 			pboxes.add(pboxBuff);
 		}
-		epoch = 0;
+		predEpoch = 0;
+		acoEpoch = 0;
 	}
 
 	public void Start() {
-		timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
+		predictionTimer = new Timer();
+		predictionTimer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-				Update();
+				UpdatePrediction();
 			}
 		}, 2 * 1000, PREDICTION_INTERVAL);
+		
+		acoTimer = new Timer();
+		acoTimer.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				UpdateACO();
+			}
+		}, 2 * 1000, ACO_INTERVAL);
 	}
 
 	public void Stop() {
-		if (timer != null)
-			timer.cancel();
+		if (predictionTimer != null)
+			predictionTimer.cancel();
+		if (acoTimer != null)
+			acoTimer.cancel();
 	}
 	
-	private void Update() {
+	private void UpdatePrediction() {
 		System.out.println("---------------------------------");
-		System.out.println("Epoch "+epoch);
+		System.out.println("Prediction epoch "+predEpoch);
 		System.out.println("---------------------------------");
 		
 		// update all the items via neural nets
@@ -92,10 +104,20 @@ public class Base {
 		}
 		itemsQueue.add(items);
 		
+		predEpoch++;
+	}
+	
+	private void UpdateACO() {
+		System.out.println("---------------------------------");
+		System.out.println("ACO epoch "+acoEpoch);
+		System.out.println("---------------------------------");
+		
 		// run the algorithm
-		aco.setItems(itemsQueue.popFront());
-		aco.init();
-		aco.run();
-		epoch++;
+		if(itemsQueue.hasItems()) {
+			aco.setItems(itemsQueue.popFront());
+			aco.init();
+			aco.run();
+		}
+		acoEpoch++;
 	}
 }

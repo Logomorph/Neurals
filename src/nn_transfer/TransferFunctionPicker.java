@@ -53,9 +53,9 @@ public class TransferFunctionPicker implements Serializable{
 	public void InitNeuralNet(int input_no) {
 		net = new Network();		
 
-		Layer in = new Layer(input_no,false);
-		Layer hidden = new Layer(3,false);
-		Layer out = new Layer(tfs.size(),false);
+		Layer in = new Layer(input_no, new Sin(),false);
+		Layer hidden = new Layer(3, new Sin(), false);
+		Layer out = new Layer(tfs.size(), new Sin(), false);
 		
 		in.connectLayers(hidden);
 		hidden.connectLayers(out);
