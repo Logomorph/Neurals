@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title></title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width">
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+
+<link rel="stylesheet" href="css/normalize.min.css">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/tabs.css">
+<link rel="stylesheet" href="css/jquery.dataTables.css">
+<link rel="stylesheet" href="css/custom.css">
+<style type="text/css">
+.ui-dialog-titlebar-close {
+	display: none;
+}
+</style>
+
+
+<!-- <link rel="stylesheet" type="text/css" href="http://www.highcharts.com/highslide/highslide.css" /> -->
+<script src="js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+</head>
+<body>
+	<!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+	<div class="header-container">
+		<header class="wrapper clearfix">
+			<h1 class="title">Green Data Centers</h1>
+			<!-- 			<nav> -->
+			<!-- 				<ul> -->
+			<!-- 					<li><a href="#">nav ul li a</a></li> -->
+			<!-- 					<li><a href="#">nav ul li a</a></li> -->
+			<!-- 					<li><a href="#">nav ul li a</a></li> -->
+			<!-- 				</ul> -->
+			<!-- 			</nav> -->
+		</header>
+	</div>
+
+	<div class="main-container">
+		<div class="main wrapper clearfix">
+
+			<article>
+				<header>
+					<h2>Workload Prediction</h2>
+					<p>A summary of monitored data on in coming workload is
+						available below.</p>
+				</header>
+
+				<section>
+					<div style="text-align: center; width: 100%;">
+						<!-- the tabs -->
+						<div style="padding-left: 10%;">
+							<ul class="css-tabs">
+								<li><a href="#">Workload Time Series</a></li>
+								<li><a href="#">VM Resource Demands</a></li>
+								<li><a href="#">Tab 3</a></li>
+							</ul>
+
+							<!-- tab "panes" -->
+							<div class="css-panes">
+								<div class="sub-panes" id="highcharts"
+									style="width: 75%; height: 400px;"></div>
+								<div class="sub-panes">Second tab content</div>
+								<div class="sub-panes">Third tab content</div>
+							</div>
+						</div>
+					</div>
+				</section>
+				<section>
+					<h2>Workload Consolidation</h2>
+					<p>Consolidation, achieved through Ant Colony Optimization
+						adapted for Bin Packing, for deployment and migration, yileds the
+						following solution:</p>
+					<div>
+						<span style="padding: 0em 12em 10em 13em; display: block;"><img
+							src="/GreenDC/img/arrow.jpg" alt="Workload consolidation"
+							height="133" width="583"> </span>
+						<h3 style="padding-left: 5%;">Deployment schema</h3>
+						<span class="comp1 physical_machine"><img
+							src="/GreenDC/img/red_comp.png" height="80" width="80"></span>
+						<span class="comp2 physical_machine"><img
+							src="/GreenDC/img/green_comp.png" height="80" width="80"></span>
+						<span class="comp3 physical_machine"><img
+							src="/GreenDC/img/red_comp.png" height="80" width="80"></span>
+						<span class="comp4 physical_machine"><img
+							src="/GreenDC/img/green_comp.png" height="80" width="80"></span>
+						<span class="comp5 physical_machine"><img
+							src="/GreenDC/img/red_comp.png" height="80" width="80"></span>
+						<div id="dialog" title="jQuery UI Dialog" style="display: none; font-size: 12px;">
+							<p>positioned relative to mousemove event, using the position
+								utility</p>
+						</div>
+					</div>
+				</section>
+				<section style="padding-left: 5%;">
+					<h3>Results and conclusions</h3>
+					<div class="summary-table">
+						<label class="summary-label">Summary of resources</label>
+						<div>
+							<span class="summary-span hosts"> Hosts </span><span
+								class="results-span host"> 4/5 </span>
+						</div>
+						<div>
+							<span class="summary-span cpu"> CPU (Total) </span><span
+								class="results-span cpu"> 20/24 </span>
+						</div>
+						<div>
+							<span class="summary-span mips"> MIPS </span><span
+								class="results-span mips"> 10000 </span>
+						</div>
+						<div>
+							<span class="summary-span vm"> VMs/h </span><span
+								class="results-span vm"> 50 </span>
+						</div>
+					</div>
+
+				</section>
+				<!-- 				<div style="padding-top: 5%;"> -->
+				<!-- 					<table cellpadding="0" cellspacing="0" border="0" -->
+				<!-- 						class="display dataTable" id="example" -->
+				<!-- 						aria-describedby="example_info"> -->
+
+				<!-- 						<tbody role="alert" aria-live="polite" aria-relevant="all"> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Firefox 1.0</td> -->
+				<!-- 								<td class=" ">Win 98+ / OSX.2+</td> -->
+				<!-- 								<td class="center ">1.7</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Firefox 1.5</td> -->
+				<!-- 								<td class=" ">Win 98+ / OSX.2+</td> -->
+				<!-- 								<td class="center ">1.8</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Firefox 2.0</td> -->
+				<!-- 								<td class=" ">Win 98+ / OSX.2+</td> -->
+				<!-- 								<td class="center ">1.8</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Firefox 3.0</td> -->
+				<!-- 								<td class=" ">Win 2k+ / OSX.3+</td> -->
+				<!-- 								<td class="center ">1.9</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Camino 1.0</td> -->
+				<!-- 								<td class=" ">OSX.2+</td> -->
+				<!-- 								<td class="center ">1.8</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Camino 1.5</td> -->
+				<!-- 								<td class=" ">OSX.3+</td> -->
+				<!-- 								<td class="center ">1.8</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Netscape 7.2</td> -->
+				<!-- 								<td class=" ">Win 95+ / Mac OS 8.6-9.2</td> -->
+				<!-- 								<td class="center ">1.7</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Netscape Browser 8</td> -->
+				<!-- 								<td class=" ">Win 98SE+</td> -->
+				<!-- 								<td class="center ">1.7</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Netscape Navigator 9</td> -->
+				<!-- 								<td class=" ">Win 98+ / OSX.2+</td> -->
+				<!-- 								<td class="center ">1.8</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.0</td> -->
+				<!-- 								<td class=" ">Win 95+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.1</td> -->
+				<!-- 								<td class=" ">Win 95+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1.1</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.2</td> -->
+				<!-- 								<td class=" ">Win 95+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1.2</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.3</td> -->
+				<!-- 								<td class=" ">Win 95+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1.3</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.4</td> -->
+				<!-- 								<td class=" ">Win 95+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1.4</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.5</td> -->
+				<!-- 								<td class=" ">Win 95+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1.5</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.6</td> -->
+				<!-- 								<td class=" ">Win 95+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1.6</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.7</td> -->
+				<!-- 								<td class=" ">Win 98+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1.7</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Mozilla 1.8</td> -->
+				<!-- 								<td class=" ">Win 98+ / OSX.1+</td> -->
+				<!-- 								<td class="center ">1.8</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA odd"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Seamonkey 1.1</td> -->
+				<!-- 								<td class=" ">Win 98+ / OSX.2+</td> -->
+				<!-- 								<td class="center ">1.8</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 							<tr class="gradeA even"> -->
+				<!-- 								<td class="  sorting_1">Gecko</td> -->
+				<!-- 								<td class=" ">Epiphany 2.20</td> -->
+				<!-- 								<td class=" ">Gnome</td> -->
+				<!-- 								<td class="center ">1.8</td> -->
+				<!-- 								<td class="center ">A</td> -->
+				<!-- 							</tr> -->
+				<!-- 						</tbody> -->
+				<!-- 					</table> -->
+				<!-- 				</div> -->
+
+				<!-- 				<footer> -->
+
+				<!-- 					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. -->
+				<!-- 						Aliquam sodales urna non odio egestas tempor. Nunc vel vehicula -->
+				<!-- 						ante. Etiam bibendum iaculis libero, eget molestie nisl pharetra -->
+				<!-- 						in. In semper consequat est, eu porta velit mollis nec. Curabitur -->
+				<!-- 						posuere enim eget turpis feugiat tempor.</p> -->
+				<!-- 				</footer> -->
+			</article>
+
+		</div>
+		<!-- #main -->
+	</div>
+	<!-- #main-container -->
+
+	<div class="footer-container">
+		<footer class="wrapper">
+			<h3>Authors:</h3>
+		</footer>
+	</div>
+
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+
+	<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+	<script src="js/jquery.tools.min.js"></script>
+
+	<script src="js/custom.js"></script>
+	<script src="js/jquery.dataTables.js"></script>
+
+
+	<script src="js/plugins.js"></script>
+	<script src="js/main.js"></script>
+	<script src="js/table.js"></script>
+	<script src="js/highcharts.js"></script>
+	<!-- 	<script src="http://code.highcharts.com/modules/data.js"></script> -->
+	<!-- 	<script src="http://code.highcharts.com/modules/exporting.js"></script> -->
+	<!-- Additional files for the Highslide popup effect -->
+	<script type="text/javascript"
+		src="http://www.highcharts.com/highslide/highslide-full.min.js"></script>
+	<script type="text/javascript"
+		src="http://www.highcharts.com/highslide/highslide.config.js"
+		charset="utf-8"></script>
+	<script src="js/gray.js"></script>
+	<script>
+		var _gaq = [ [ '_setAccount', 'UA-XXXXX-X' ], [ '_trackPageview' ] ];
+		(function(d, t) {
+			var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+			g.src = ('https:' == location.protocol ? '//ssl' : '//www')
+					+ '.google-analytics.com/ga.js';
+			s.parentNode.insertBefore(g, s)
+		}(document, 'script'));
+	</script>
+</body>
+</html>
