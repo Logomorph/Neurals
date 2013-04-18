@@ -1,0 +1,35 @@
+.physical_machine {
+	padding: 0em 2em 0em 5em;
+}
+
+.summary-table {
+	border: 1px solid black;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	overflow: hidden;
+	width: 100%;
+	position: relative;
+}
+
+.summary-label {
+	padding: 0.5em 1em 0.5em 2em;
+	float: left;
+	width: 100%;
+	background-color: #1A8454;
+}
+
+.summary-table div {
+	display: block;
+	clear: both;
+	border-bottom: 1px solid #ddd;
+}
+
+.summary-span {
+	padding: 0.5em 0em 0.5em 2em;
+	float: left;
+}
+
+.results-span {
+	padding: 0.5em 2em 0.5em 0em;
+	float: right;
+}
