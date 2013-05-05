@@ -14,6 +14,13 @@ public class Bin {
 		resourceCapacity = new int[Resource.values().length];
 		binLoadVector = new int[Resource.values().length];
 	}
+	
+	public int[] removeItemLoad(int[] resourceDemand) {
+		for (int r = 0 ; r < Resource.values().length - 1; r++) {
+			binLoadVector[r] = binLoadVector[r] - resourceDemand[r];
+		}
+		return binLoadVector;
+	}
 
 	public int[] getResourceCapacity() {
 		return resourceCapacity;
@@ -25,8 +32,8 @@ public class Bin {
 
 	public int[] getValueSet() {
 		int[] demandVector = new int[5];
-		for (Resource r : Resource.values()) {
-			demandVector[r.getIndex()] = resourceCapacity[r.getIndex()];
+		for (int r = 0 ; r < Resource.values().length - 1; r++) {
+			demandVector[r] = resourceCapacity[r];
 		}
 		return demandVector;
 	}

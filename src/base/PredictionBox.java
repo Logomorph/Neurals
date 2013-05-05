@@ -23,12 +23,13 @@ public class PredictionBox {
 	double[] RAM_data;
 	double[] STORAGE_data;
 	double[] BANDWIDTH_data;
+	double[] RUN_TIME_data;
 
 	int index;
 	boolean hasData;
 
 	// stuff for prediction
-	Network mipsNet, coresNet, ramNet, storeNet, bwNet;
+	Network mipsNet, coresNet, ramNet, storeNet, bwNet, runTimeNet;
 
 	public PredictionBox(Item item, int[] resourceCapacity) {
 		this.vm = item;
@@ -48,7 +49,7 @@ public class PredictionBox {
 		mipsNet.setInput(inMips);
 		mipsNet.Process();
 
-		resourceDemand[Resource.MIPS.getIndex()] = (int) (mipsNet.getOutput()[0] * vm.MIPS_MAX);
+		resourceDemand[Resource.MIPS.getIndex()] = (int) (mipsNet.getOutput()[0] * Item.MIPS_MAX);
 
 		// CORES NN
 		double[] inCores = { CORES_data[index - 2], CORES_data[index - 1],
@@ -56,7 +57,7 @@ public class PredictionBox {
 		coresNet.setInput(inCores);
 		coresNet.Process();
 
-		resourceDemand[Resource.CORES.getIndex()] = (int) (coresNet.getOutput()[0] * vm.CORES_MAX);
+		resourceDemand[Resource.CORES.getIndex()] = (int) (coresNet.getOutput()[0] * Item.CORES_MAX);
 
 		// RAM NN
 		double[] inRam = { RAM_data[index - 2], RAM_data[index - 1],
@@ -64,7 +65,7 @@ public class PredictionBox {
 		ramNet.setInput(inRam);
 		ramNet.Process();
 
-		resourceDemand[Resource.RAM.getIndex()] = (int) (ramNet.getOutput()[0] * vm.RAM_MAX);
+		resourceDemand[Resource.RAM.getIndex()] = (int) (ramNet.getOutput()[0] * Item.RAM_MAX);
 
 		// STORAGE NN
 		double[] inStorage = { STORAGE_data[index - 2],
@@ -73,7 +74,7 @@ public class PredictionBox {
 		storeNet.Process();
 
 		resourceDemand[Resource.STORAGE.getIndex()] = (int) (storeNet
-				.getOutput()[0] * vm.STORAGE_MAX);
+				.getOutput()[0] * Item.STORAGE_MAX);
 
 		// BANDWIDTH NN
 		double[] inBw = { BANDWIDTH_data[index - 2], BANDWIDTH_data[index - 1],
@@ -82,11 +83,20 @@ public class PredictionBox {
 		bwNet.Process();
 
 		resourceDemand[Resource.BANDWIDTH.getIndex()] = (int) (bwNet
-				.getOutput()[0] * vm.BANDWIDTH_MAX);
+				.getOutput()[0] * Item.BANDWIDTH_MAX);
+
+		// RUN_TIME NN
+		double[] inRunTime = { RUN_TIME_data[index - 2], RUN_TIME_data[index - 1],
+				RUN_TIME_data[index] };
+		runTimeNet.setInput(inRunTime);
+		runTimeNet.Process();
+
+		resourceDemand[Resource.RUN_TIME.getIndex()] = (int) (runTimeNet
+				.getOutput()[0] * Item.RUN_TIME_MAX);
 
 		this.vm.setResourceDemand(resourceDemand);
 
-		if(index < MIPS_data.length) {
+		if (index < MIPS_data.length) {
 			hasData = true;
 			index++;
 		} else {
@@ -97,7 +107,7 @@ public class PredictionBox {
 	public Item getItem() {
 		return this.vm;
 	}
-	
+
 	public boolean hasData() {
 		return this.hasData;
 	}
@@ -110,6 +120,7 @@ public class PredictionBox {
 		RAM_data = swg.GeneratePattern(0);
 		STORAGE_data = swg.GeneratePattern(0);
 		BANDWIDTH_data = swg.GeneratePattern(0);
+		RUN_TIME_data = swg.GeneratePattern(0);
 		index = 2;
 	}
 
@@ -119,6 +130,7 @@ public class PredictionBox {
 		ramNet = createAndTrainNetwork(RAM_data);
 		storeNet = createAndTrainNetwork(STORAGE_data);
 		bwNet = createAndTrainNetwork(BANDWIDTH_data);
+		runTimeNet = createAndTrainNetwork(RUN_TIME_data);
 	}
 
 	private Network createAndTrainNetwork(double[] data) {

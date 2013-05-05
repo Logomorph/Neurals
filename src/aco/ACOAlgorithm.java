@@ -5,14 +5,13 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import util.Initializer;
 import aco_entities.Bin;
 import aco_entities.Item;
 import aco_entities.Pheromones;
+import aco_entities.Resource;
 
-import util.Initializer;
-
-
-public class ACOAlgorithm{
+public class ACOAlgorithm {
 
 	public static final double ALPHA = 1.0d;
 	public static final double BETA = 2.0d;
@@ -29,7 +28,7 @@ public class ACOAlgorithm{
 	public static int NB_OF_BINS;
 	public static int NB_OF_ITEMS;
 
-	private static double THRESHOLD = 0.3d;
+	// private static double THRESHOLD = 0.3d;
 
 	private double[][] pheromones;
 	private double tauMax;
@@ -46,6 +45,8 @@ public class ACOAlgorithm{
 
 	private double[][] probabilities;
 	private double[][] niu;
+
+	private List<Bin> leftoverBins;
 
 	public double[][] initializeNiu() {
 		double[][] temp = new double[items.size()][bins.size()];
@@ -101,114 +102,125 @@ public class ACOAlgorithm{
 	}
 
 	public void run() {
-		// inline thread, so we can call this more than once
-		new Thread() {
-			public void run() {
-				// do stuff
-				int q;
-				int a;
-				int v;
-				int i;
+		int q;
+		int a;
+		int v;
+		int i;
 
-				List<Item> copyOfItemSet = new ArrayList<Item>();
-				List<Item> setOfQualifiedItems = new ArrayList<Item>();
+		List<Item> copyOfItemSet = new ArrayList<Item>();
+		List<Item> setOfQualifiedItems = new ArrayList<Item>();
 
-				int[] binLoadVector;
+		int[] binLoadVector;
 
-				for (q = 0; q < NB_OF_CYCLES; q++) {
-					System.out.println("Cycle number " + q);
-					x = Initializer.initializeIndividualAntMatrix(NB_OF_ITEMS,
-							NB_OF_BINS);
-					for (Bin bin : bins) {
-						for (int k = 0; k < bin.getBinLoadVector().length; k++)
-							bin.getBinLoadVector()[k] = 0;
-						bin.setStatus(Bin.IS_OFF);
-					}
+		for (q = 0; q < NB_OF_CYCLES; q++) {
+			System.out.println("Cycle number " + q);
+			x = Initializer.initializeIndividualAntMatrix(NB_OF_ITEMS,
+					NB_OF_BINS);
+			for (Bin bin : bins) {
+				for (int k = 0; k < bin.getBinLoadVector().length; k++)
+					bin.getBinLoadVector()[k] = 0;
+				bin.setStatus(Bin.IS_OFF);
+			}
 
-					for (a = 0; a < NB_OF_ANTS; a++) {
-						copyOfItemSet.clear();
-						for (Item item : items) {
-							copyOfItemSet.add(item);
-						}
-
-						v = 0;
-
-						while (copyOfItemSet.size() > 0 && v < NB_OF_BINS) {
-
-							setOfQualifiedItems = determineSetOfQualifiedItems(
-									v, copyOfItemSet);
-
-							if (setOfQualifiedItems.size() > 0) {
-								double sum = 0.0;
-								for (Item item : setOfQualifiedItems) {
-									i = items.indexOf(item);
-									sum = sum
-											+ (Math.pow(pheromones[i][v], ALPHA) * Math
-													.pow(niu[i][v], BETA));
-								}
-
-								i = chooseItemWithLargestProbability(sum, v,
-										setOfQualifiedItems);
-								if (bins.get(v).getStatus() == Bin.IS_OFF) {
-									bins.get(v).turnON();
-								}
-								x[i][v] = 1;
-								System.out.println("item " + i + " with size: "
-										+ items.get(i).getValueSet()[0]
-										+ " in bin " + v);
-								x[items.size()][v] = 1;
-								niu[i][v] = adjustNiu(i, v);
-								copyOfItemSet.remove(items.get(i));
-								setOfQualifiedItems.remove(items.get(i));
-								binLoadVector = computeBinLoadVector(v);
-								bins.get(v).setBinLoadVector(binLoadVector);
-							} else {
-								v++;
-							}
-						}
-					}
-
-					// calculate best cycle solution matrix
-					bestCycleSolution = calculateBestCycleSolution(x,
-							bestCycleSolution);
-
-					if (q == 0 || isGlobalBest(bestCycleSolution)) {
-						globalBestSolution = bestCycleSolution.clone();
-					}
-
-					for (int item = 0; item < items.size(); item++) {
-						for (int b = 0; b < bins.size(); b++) {
-							if (x[item][b] == 0) {
-								deltaTauBest[item][b] = 0;
-							} else {
-								deltaTauBest[item][b] = 1.0 / bestNumberOfUsedBins;
-							}
-						}
-					}
-					pheromones = adjustPheromones();
-
+			for (a = 0; a < NB_OF_ANTS; a++) {
+				copyOfItemSet.clear();
+				for (Item item : items) {
+					copyOfItemSet.add(item);
 				}
 
-				try {
-					// Create file
-					FileWriter fstream = new FileWriter("out.txt");
-					BufferedWriter out = new BufferedWriter(fstream);
-					out.write("Global best solution: \n");
-					for (i = 0; i < items.size(); i++) {
-						for (int b = 0; b < bins.size(); b++) {
-							out.write(globalBestSolution[i][b] + " ");
-							if (x[items.size()][b] == 0)
-								bins.get(b).turnOff();
-						}
-						out.write("\n");
-					}
+				v = 0;
 
-					out.close();
-				} catch (Exception e) {// Catch exception if any
-					System.err.println("Error: " + e.getMessage());
+				while (copyOfItemSet.size() > 0 && v < NB_OF_BINS) {
+
+					setOfQualifiedItems = determineSetOfQualifiedItems(v,
+							copyOfItemSet);
+
+					if (setOfQualifiedItems.size() > 0) {
+						double sum = 0.0;
+						for (Item item : setOfQualifiedItems) {
+							i = items.indexOf(item);
+							sum = sum
+									+ (Math.pow(pheromones[i][v], ALPHA) * Math
+											.pow(niu[i][v], BETA));
+						}
+
+						i = chooseItemWithLargestProbability(sum, v,
+								setOfQualifiedItems);
+						if (bins.get(v).getStatus() == Bin.IS_OFF) {
+							bins.get(v).turnON();
+						}
+						x[i][v] = 1;
+						System.out.println("item " + i + " with size: "
+								+ items.get(i).getValueSet()[0] + ", "
+								+ items.get(i).getValueSet()[1] + ", "
+								+ items.get(i).getValueSet()[2] + ", "
+								+ items.get(i).getValueSet()[3] + ", "
+								+ items.get(i).getValueSet()[4] + " in bin "
+								+ v);
+						x[items.size()][v] = 1;
+						niu[i][v] = adjustNiu(i, v);
+						copyOfItemSet.remove(items.get(i));
+						setOfQualifiedItems.remove(items.get(i));
+						binLoadVector = computeBinLoadVector(v);
+						bins.get(v).setBinLoadVector(binLoadVector);
+					} else {
+						v++;
+					}
 				}
 			}
-		}.start();
+
+			// calculate best cycle solution matrix
+			bestCycleSolution = calculateBestCycleSolution(x, bestCycleSolution);
+
+			if (q == 0 || isGlobalBest(bestCycleSolution)) {
+				globalBestSolution = bestCycleSolution.clone();
+			}
+
+			for (int item = 0; item < items.size(); item++) {
+				for (int b = 0; b < bins.size(); b++) {
+					if (x[item][b] == 0) {
+						deltaTauBest[item][b] = 0;
+					} else {
+						deltaTauBest[item][b] = 1.0 / bestNumberOfUsedBins;
+					}
+				}
+			}
+			pheromones = adjustPheromones();
+
+		}
+
+		for (int col = 0; col < bins.size(); col++) {
+			binLoadVector = new int[Resource.values().length - 1];
+			for (i = 0; i < binLoadVector.length; i++) {
+				binLoadVector[i] = 0;
+			}
+			for (int row = 0; row < items.size(); row++) {
+				if (globalBestSolution[row][col] != 0) {
+					for (i = 0; i < binLoadVector.length; i++) {
+						binLoadVector[i] += items.get(row).getResourceDemand()[i];
+					}
+				}
+			}
+			bins.get(col).setBinLoadVector(binLoadVector);
+		}
+
+		try {
+			// Create file
+			FileWriter fstream = new FileWriter("out.txt");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("Global best solution: \n");
+			for (i = 0; i < items.size(); i++) {
+				for (int b = 0; b < bins.size(); b++) {
+					out.write(globalBestSolution[i][b] + " ");
+					if (x[items.size()][b] == 0)
+						bins.get(b).turnOff();
+				}
+				out.write("\n");
+			}
+			out.close();
+		} catch (Exception e) {// Catch exception if any
+			System.err.println("Error: " + e.getMessage());
+		}
 	}
 
 	private double[][] adjustPheromones() {
@@ -243,6 +255,8 @@ public class ACOAlgorithm{
 		if (total1 < total2 || total2 == 0) {
 			bestCycleSolution = antSolution.clone();
 			bestNumberOfUsedBins = total1;
+		} else if (total1 == total2) {
+			bestCycleSolution = antSolution.clone();
 		}
 
 		return bestCycleSolution;
@@ -364,5 +378,35 @@ public class ACOAlgorithm{
 
 	public void setItems(List<Item> items) {
 		this.items = items;
+	}
+
+	/**
+	 * @return the globalBestSolution
+	 */
+	public int[][] getGlobalBestSolution() {
+		return globalBestSolution;
+	}
+
+	/**
+	 * @param globalBestSolution
+	 *            the globalBestSolution to set
+	 */
+	public void setGlobalBestSolution(int[][] globalBestSolution) {
+		this.globalBestSolution = globalBestSolution;
+	}
+
+	/**
+	 * @return the leftoverBins
+	 */
+	public List<Bin> getLeftoverBins() {
+		return leftoverBins;
+	}
+
+	/**
+	 * @param leftoverBins
+	 *            the leftoverBins to set
+	 */
+	public void setLeftoverBins(List<Bin> leftoverBins) {
+		this.leftoverBins = leftoverBins;
 	}
 }
