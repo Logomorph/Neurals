@@ -73,13 +73,6 @@ public class Item {
 		endRunTime = new Timer(resourceDemand[Resource.RUN_TIME.getIndex()], taskPerformer);
 		endRunTime.setRepeats(false);
 		endRunTime.start();
-		// endRunTime.schedule(new TimerTask() {
-		// @Override
-		// public void run() {
-
-		// endRunTime.cancel();
-		// }
-		// }, resourceDemand[Resource.RUN_TIME.getIndex()]);
 
 	}
 
