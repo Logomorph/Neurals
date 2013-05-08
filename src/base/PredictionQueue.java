@@ -27,8 +27,12 @@ public class PredictionQueue {
 	 * @return null if queue is empty, list if queue has items in it
 	 */
 	public synchronized List<Item> popFront() {
-		if (qi.size() == 0)
+		if (qi.size() == 0) {
+			System.out.println("---------------------------------");
+			System.out.println("Pop front, but prediction queue is empty.");
+			System.out.println("---------------------------------");
 			return null;
+		}
 
 		List<Item> buff = qi.get(0).items;
 		qi.remove(0);
@@ -38,3 +42,4 @@ public class PredictionQueue {
 		return qi.size() > 0;
 	}
 }
+;

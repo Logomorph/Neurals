@@ -96,13 +96,13 @@ public class Base {
 		System.out.println("Prediction epoch " + predEpoch);
 		System.out.println("---------------------------------");
 
-//		if(acoEpoch > 0)
-//			checkItemsTimer();
+		if(acoEpoch > 0)
+			checkItemsTimer();
 		// update all the items via neural nets
 		for (int i = 0; i < pboxes.size(); i++) {
 			pboxes.get(i).Update();
-			items.set(i, pboxes.get(i).getItem());
-			//items.add(pboxes.get(i).getItem());
+			//items.set(i, pboxes.get(i).getItem());
+			items.add(pboxes.get(i).getItem());
 		}
 		itemsQueue.add(items);
 //		if (predEpoch == 5)
@@ -117,8 +117,9 @@ public class Base {
 
 		// run the algorithm
 		if (itemsQueue.hasItems()) {
-//			ACOAlgorithm.NB_OF_ITEMS = itemsQueue.popFront().size();
-			aco.setItems(itemsQueue.popFront());		
+			List<Item> queueFront = itemsQueue.popFront();
+			ACOAlgorithm.NB_OF_ITEMS = queueFront.size();
+			aco.setItems(queueFront);		
 			aco.init();
 			aco.run();
 //			for (Item i : aco.getItems()) {
@@ -152,11 +153,21 @@ public class Base {
 	public void checkItemsTimer() {
 //		int[][] globalBestSolution = aco.getGlobalBestSolution();
 //		List<Bin> bins = aco.getBins();
-		for (int row = 0; row < ACOAlgorithm.NB_OF_ITEMS; row++) {
+		
+		//------------------------------------------------------
+		// When you delete items from a list, use while, not for
+		//------------------------------------------------------
+		
+		//for (int row = 0; row < ACOAlgorithm.NB_OF_ITEMS; row++) {
+		int row = 0;
+		while(row < ACOAlgorithm.NB_OF_ITEMS && items.size() > 0) {
 			if(items.get(row).getEndRunTime() != null && !items.get(row).getEndRunTime().isRunning()) {
 				System.out.println("Remove item nb " + row);
 				
 				items.remove(row);
+				row = 0;
+			} else {
+				row++;
 			}
 		}
 	}
