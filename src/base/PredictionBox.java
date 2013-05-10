@@ -107,7 +107,6 @@ public class PredictionBox {
 
 		if (graphCSV != null) {
 			graphCSV.addLine(vm.getIdentifier(),
-					new Timestamp(new Date().getTime()),
 					resourceDemand[Resource.MIPS.getIndex()],
 					resourceDemand[Resource.RAM.getIndex()],
 					resourceDemand[Resource.CORES.getIndex()],
