@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import util.GraphCSVWriter;
 import util.InputReader;
 import aco.ACOAlgorithm;
 import aco_entities.Bin;
@@ -19,11 +20,14 @@ public class Base {
 	private List<PredictionBox> pboxes;
 	private int predEpoch, acoEpoch;
 	private PredictionQueue itemsQueue;
+	GraphCSVWriter graphCSV;
 
 	private static int PREDICTION_INTERVAL = 5000; // ms
 	private static int ACO_INTERVAL = 3000; // ms
 
 	public Base() {
+		graphCSV = new GraphCSVWriter("vms.csv");
+		
 		itemsQueue = new PredictionQueue();
 
 		LinkedList<Integer> numbers = (LinkedList<Integer>) InputReader
@@ -58,7 +62,7 @@ public class Base {
 			i.setResourceDemand(resourceDemand);
 			items.add(i);
 
-			PredictionBox pboxBuff = new PredictionBox(i, resourceCapacity);
+			PredictionBox pboxBuff = new PredictionBox(i, resourceCapacity, graphCSV);
 			pboxes.add(pboxBuff);
 		}
 
@@ -162,7 +166,7 @@ public class Base {
 		int row = 0;
 		while(row < ACOAlgorithm.NB_OF_ITEMS && items.size() > 0) {
 			if(items.get(row).getEndRunTime() != null && !items.get(row).getEndRunTime().isRunning()) {
-				System.out.println("Remove item nb " + row);
+				System.out.println("Remove " + items.get(row).getIdentifier());
 				
 				items.remove(row);
 				row = 0;

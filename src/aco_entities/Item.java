@@ -5,6 +5,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.Timer;
 
+import util.Globals;
+
 public class Item {
 
 	private boolean toMigrate;
@@ -19,10 +21,16 @@ public class Item {
 
 	private Timer endRunTime;
 	private Bin deploymentBin;
+	private String identifier;
 
 	public Item() {
 		resourceDemand = new int[Resource.values().length];
 		setToMigrate(false);
+		identifier = "Item" + Globals.GetVMID();
+	}
+	
+	public String getIdentifier() {
+		return identifier;
 	}
 
 	public int[] getResourceDemand() {
