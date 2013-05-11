@@ -1,5 +1,10 @@
 package base;
 
+import java.util.Date;
+
+import com.sun.jmx.snmp.Timestamp;
+
+import util.GraphCSVWriter;
 import nn_learning.Learner;
 import nn_data.DataSet;
 import neuralnet.Layer;
@@ -31,12 +36,16 @@ public class PredictionBox {
 	// stuff for prediction
 	Network mipsNet, coresNet, ramNet, storeNet, bwNet, runTimeNet;
 
-	public PredictionBox(Item item, int[] resourceCapacity) {
+	GraphCSVWriter graphCSV;
+
+	public PredictionBox(Item item, int[] resourceCapacity,
+			GraphCSVWriter graphCSV) {
 		this.vm = item;
 		this.resourceCapacity = resourceCapacity;
 		populateData();
 		createNeuralNets();
 		hasData = true;
+		this.graphCSV = graphCSV;
 	}
 
 	// Update all the neural networks and the Item
@@ -86,8 +95,8 @@ public class PredictionBox {
 				.getOutput()[0] * Item.BANDWIDTH_MAX);
 
 		// RUN_TIME NN
-		double[] inRunTime = { RUN_TIME_data[index - 2], RUN_TIME_data[index - 1],
-				RUN_TIME_data[index] };
+		double[] inRunTime = { RUN_TIME_data[index - 2],
+				RUN_TIME_data[index - 1], RUN_TIME_data[index] };
 		runTimeNet.setInput(inRunTime);
 		runTimeNet.Process();
 
@@ -95,6 +104,16 @@ public class PredictionBox {
 				.getOutput()[0] * Item.RUN_TIME_MAX);
 
 		this.vm.setResourceDemand(resourceDemand);
+
+		if (graphCSV != null) {
+			graphCSV.addLine(vm.getIdentifier(),
+					resourceDemand[Resource.MIPS.getIndex()],
+					resourceDemand[Resource.RAM.getIndex()],
+					resourceDemand[Resource.CORES.getIndex()],
+					resourceDemand[Resource.STORAGE.getIndex()],
+					resourceDemand[Resource.BANDWIDTH.getIndex()],
+					resourceDemand[Resource.RUN_TIME.getIndex()]);
+		}
 
 		if (index < MIPS_data.length) {
 			hasData = true;
