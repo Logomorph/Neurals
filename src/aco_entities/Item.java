@@ -22,11 +22,18 @@ public class Item {
 	private Timer endRunTime;
 	private Bin deploymentBin;
 	private String identifier;
+	public boolean startedRunning;
 
 	public Item() {
+		startedRunning = false;
 		resourceDemand = new int[Resource.values().length];
 		setToMigrate(false);
-		identifier = "Item" + Globals.GetVMID();
+		identifier = "Item" + Globals.getVMID();
+	}
+	
+	public Item(Item item) {
+		super();
+		setResourceDemand(item.getResourceDemand());
 	}
 	
 	public String getIdentifier() {
@@ -58,23 +65,24 @@ public class Item {
 	}
 
 	public void start() {
+		startedRunning = true;
 		// endRunTime = new Timer();
 
 		ActionListener taskPerformer = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				// destroy VM;
-				System.out.println("Item demand: "
-						+ resourceDemand[Resource.MIPS.getIndex()]);
-				System.out.println("Bin load before:  "
-						+ deploymentBin.getBinLoadVector()[Resource.MIPS
-								.getIndex()]);
+//				System.out.println("Item demand: "
+//						+ resourceDemand[Resource.MIPS.getIndex()]);
+//				System.out.println("Bin load before:  "
+//						+ deploymentBin.getBinLoadVector()[Resource.MIPS
+//								.getIndex()]);
 				deploymentBin.setBinLoadVector(deploymentBin
 						.removeItemLoad(resourceDemand));
-				System.out.println("Item done after "
-						+ resourceDemand[Resource.RUN_TIME.getIndex()] + "!");
-				System.out.println("Bin load after:  "
-						+ deploymentBin.getBinLoadVector()[Resource.MIPS
-								.getIndex()]);
+//				System.out.println("Item done after "
+//						+ resourceDemand[Resource.RUN_TIME.getIndex()] + "!");
+//				System.out.println("Bin load after:  "
+//						+ deploymentBin.getBinLoadVector()[Resource.MIPS
+//								.getIndex()]);
 				endRunTime.stop();
 			}
 		};
@@ -111,5 +119,19 @@ public class Item {
 	 */
 	public void setEndRunTime(Timer endRunTime) {
 		this.endRunTime = endRunTime;
+	}
+
+	/**
+	 * @return the startedRunning
+	 */
+	public boolean isStartedRunning() {
+		return startedRunning;
+	}
+
+	/**
+	 * @param startedRunning the startedRunning to set
+	 */
+	public void setStartedRunning(boolean startedRunning) {
+		this.startedRunning = startedRunning;
 	}
 }

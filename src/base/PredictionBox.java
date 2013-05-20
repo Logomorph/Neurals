@@ -1,17 +1,13 @@
 package base;
 
-import java.util.Date;
-
-import com.sun.jmx.snmp.Timestamp;
-
-import util.GraphCSVWriter;
-import nn_learning.Learner;
-import nn_data.DataSet;
 import neuralnet.Layer;
 import neuralnet.Network;
+import nn_data.DataSet;
 import nn_data.DataSetRow;
+import nn_learning.Learner;
 import nn_patterns.SineWave;
 import nn_transfer.Sin;
+import util.GraphCSVWriter;
 import aco_entities.Item;
 import aco_entities.Resource;
 
