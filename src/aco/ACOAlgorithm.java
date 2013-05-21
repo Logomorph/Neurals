@@ -116,21 +116,36 @@ public class ACOAlgorithm {
 
 		List<Item> copyOfItemSet = new ArrayList<Item>();
 		List<Item> setOfQualifiedItems = new ArrayList<Item>();
-
+		int index;
 		int[] binLoadVector;
 		if (leftoverItems != null)
 			for (Item item : leftoverItems) {
-				System.out.println("leftover item: "
+				System.out.println("leftover item " + items.indexOf(item)
+						+ " : "
 						+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
 			}
 		for (q = 0; q < NB_OF_CYCLES; q++) {
+			index = -1;
 			// System.out.println("Cycle number " + q);
+
 			x = Initializer.initializeIndividualAntMatrix(NB_OF_ITEMS,
 					NB_OF_BINS);
+			if (leftoverItems != null)
+				for (Item item : leftoverItems) {
+					index = bins.indexOf(item.getDeploymentBin());
+					x[items.indexOf(item)][index] = 1;
+					binLoadVector = computeBinLoadVector(index);
+					bins.get(index).setBinLoadVector(binLoadVector);
+				}
 			for (Bin bin : bins) {
-				for (int k = 0; k < bin.getBinLoadVector().length; k++)
-					bin.getBinLoadVector()[k] = 0;
-				bin.setStatus(Bin.IS_OFF);
+				if (index != -1 && bins.indexOf(bin) != index) {
+					
+				}
+				else {
+					for (int k = 0; k < bin.getBinLoadVector().length; k++)
+						bin.getBinLoadVector()[k] = 0;
+					bin.setStatus(Bin.IS_OFF);
+				}
 			}
 
 			for (a = 0; a < NB_OF_ANTS; a++) {
