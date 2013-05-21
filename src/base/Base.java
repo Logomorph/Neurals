@@ -192,7 +192,7 @@ public class Base {
 		// }
 		itemsQueue.add(items);
 
-		if (predEpoch == 7)
+		if (predEpoch == 5)
 			predictionTimer.cancel();
 		predEpoch++;
 	}
@@ -251,14 +251,18 @@ public class Base {
 						// deploy VM in corresponding Machine
 						System.out.println("Item " + row + " in bin " + col);
 						items.get(row).setDeploymentBin(bins.get(col));
-						items.get(row).start();
+						if (items.get(row).getEndRunTime() == null
+								|| (items.get(row).getEndRunTime() != null && !items
+										.get(row).getEndRunTime().isRunning())) {
+							items.get(row).start();
+						}
 						globalBestSolution[row][col] = 0;
 						break;
 					}
 				}
 			}
 		}
-		if (acoEpoch == 15)
+		if (acoEpoch == 11)
 			Stop();
 		acoEpoch++;
 	}
@@ -285,7 +289,7 @@ public class Base {
 				} else {
 					leftoverItems.add(items.get(row));
 					row++;
-					//System.out.println("Row " + row);
+					// System.out.println("Row " + row);
 				}
 			} else {
 				row++;
