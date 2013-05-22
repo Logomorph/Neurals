@@ -1,7 +1,6 @@
 package base;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -82,7 +81,7 @@ public class Base {
 		predictionTimer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-				UpdatePrediction();
+				updatePrediction();
 			}
 		}, 2 * 1000, PREDICTION_INTERVAL);
 
@@ -90,7 +89,7 @@ public class Base {
 		acoTimer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-				UpdateACO();
+				updateACO();
 			}
 		}, 2 * 1000, ACO_INTERVAL);
 	}
@@ -102,7 +101,7 @@ public class Base {
 			acoTimer.cancel();
 	}
 
-	private void UpdatePrediction() {
+	private synchronized void updatePrediction() {
 		System.out.println("---------------------------------");
 		System.out.println("Prediction epoch " + predEpoch);
 		System.out.println("---------------------------------");
@@ -113,83 +112,16 @@ public class Base {
 		checkItemsTimer();
 		// update all the items via neural nets
 		System.out.println("Items size: " + items.size());
-		if (overflowItems != null && overflowItems.size() > 0) {
-			// for (Item item : overflowItems) {
-			// System.out
-			// .println("Overflowed items at the beginning of prediction: "
-			// + item.getResourceDemand()[Resource.MIPS
-			// .getIndex()]);
-			// }
-			Iterator<Item> it = overflowItems.iterator();
-			while (it.hasNext()) {
-				Item item = it.next();
-				if (aco.getAvailableResources() != null)
-					// System.out
-					// .println("Items contains item "
-					// + item.getResourceDemand()[Resource.MIPS
-					// .getIndex()] + " is "
-					// + items.contains(item));
-					if (checkSpaceConstraints(item) && !items.contains(item)) {
-						items.add(item);
-						// for (Item i : items) {
-						// System.out.println("Items after add: "
-						// + i.getResourceDemand()[Resource.MIPS
-						// .getIndex()]);
-						// }
-						System.out
-								.println("Overflowed item removed from queue: "
-										+ item.getResourceDemand()[Resource.MIPS
-												.getIndex()]);
-						it.remove();
-						// for (Item i : items) {
-						// System.out.println("Items after remove: "
-						// + i.getResourceDemand()[Resource.MIPS.getIndex()]);
-						// }
-					}
-			}
-		}
-
-		// for (Item item : overflowItems) {
-		// System.out.println("Remaining overflowed items: "
-		// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
-		// }
-		// itemsQueue.popFront();
-		// for (Item i : items) {
-		// System.out.println("Items before pboxes: "
-		// + i.getResourceDemand()[Resource.MIPS.getIndex()]);
-		// }
 		for (int i = 0; i < pboxes.size(); i++) {
 			pboxes.get(i).Update();
 
 			if (aco.getAvailableResources() != null)
-				if (checkSpaceConstraints(pboxes.get(i).getItem())) {
-					// if(items.size() > 0)
-					// System.out.println(items.size());
+				//if (checkSpaceConstraints(pboxes.get(i).getItem())) {
 					items.add(new Item(pboxes.get(i).getItem()));
-					// else
-					// items.add(pboxes.get(i).getItem());
-					// System.out
-					// .println("Pboxes items goes to items: "
-					// + pboxes.get(i).getItem()
-					// .getResourceDemand()[Resource.MIPS
-					// .getIndex()]);
-					// for (Item item : items) {
-					// System.out.println("Items after new pbox: "
-					// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
-					// }
-				} else {
-					overflowItems.add(pboxes.get(i).getItem());
-					// System.out
-					// .println("Overflowed item: "
-					// + pboxes.get(i).getItem()
-					// .getResourceDemand()[Resource.MIPS
-					// .getIndex()]);
-				}
+				//} else {
+					//overflowItems.add(pboxes.get(i).getItem());
+				//}
 		}
-		// for (Item item : items) {
-		// System.out.println("Items after pboxes: "
-		// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
-		// }
 		itemsQueue.add(items);
 
 		if (predEpoch == 5)
@@ -197,7 +129,7 @@ public class Base {
 		predEpoch++;
 	}
 
-	private void UpdateACO() {
+	private synchronized void updateACO() {
 		System.out.println("---------------------------------");
 		System.out.println("ACO epoch " + acoEpoch);
 		System.out.println("---------------------------------");
@@ -210,44 +142,42 @@ public class Base {
 			// System.out.println("Prediction queue items: "
 			// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
 			// }
-
 			aco.setItems(queueFront);
-			int size = aco.getItems().size();
-			// aco.getItems().addAll(size, queueFront);
-			for (Item item : aco.getItems()) {
-				System.out.println("ACO items: "
-						+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
-			}
-			// ACOAlgorithm.NB_OF_ITEMS = aco.getItems().size();
-			aco.setNB_OF_ITEMS(aco.getItems().size());
-			System.out.println("NB ITEMS " + aco.getNB_OF_ITEMS());
-			aco.init();
-			aco.run();
+
 			// for (Item item : overflowItems) {
 			// System.out.println("Overflowed items after ACO runs: "
 			// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
 			// }
+			// }
+
+		} else {
+			items = aco.getItems();
+			checkItemsTimer();
+			aco.setItems(items);
 		}
-		// items.clear();
+		// if (aco.getItems() != null && aco.getItems().size() > 0) {
+		for (Item item : aco.getItems()) {
+			System.out.println("ACO items: "
+					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+		}
+		aco.setNB_OF_ITEMS(aco.getItems().size());
+
+		System.out.println("NB ITEMS " + aco.getNB_OF_ITEMS());
+		// if (aco.getNB_OF_ITEMS() > 0) {
+		aco.init();
+		aco.run();
+		// }
 		items = aco.getItems();
 		if (items != null && items.size() > 0
 				&& aco.getGlobalBestSolution() != null) {
 
 			int[][] globalBestSolution = aco.getGlobalBestSolution();
-			boolean equalityFlag;
+		//	boolean equalityFlag;
 			List<Bin> bins = aco.getBins();
-			// for (Item item : items) {
-			// System.out.println("Items after ACO runs: "
-			// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
-			// }
 			for (int row = 0; row < aco.getNB_OF_ITEMS(); row++) {
 				for (int col = 0; col < ACOAlgorithm.NB_OF_BINS; col++) {
-					// if()
-					// System.out.println(!overflowItems.contains(items.get(row)));
 
 					if (globalBestSolution[row][col] != 0) {
-						// System.out.println("here");
-						// && !overflowItems.contains(items.get(row))) {
 						// deploy VM in corresponding Machine
 						System.out.println("Item " + row + " in bin " + col);
 						items.get(row).setDeploymentBin(bins.get(col));
@@ -262,7 +192,7 @@ public class Base {
 				}
 			}
 		}
-		if (acoEpoch == 11)
+		if (acoEpoch == 15)
 			Stop();
 		acoEpoch++;
 	}
@@ -295,26 +225,35 @@ public class Base {
 				row++;
 			}
 		}
+		aco.setItems(items);
+//		for (Item item : aco.getItems()) {
+//			System.out.println("Items after remove  "
+//					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+//		}
+//		for (Item item : leftoverItems) {
+//			System.out.println("Leftover item "
+//					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+//		}
 		aco.setLeftoverItems(leftoverItems);
 
 	}
 
-	private boolean checkSpaceConstraints(Item item) {
-		int[] resourceDemand = item.getResourceDemand();
-		int[] availableResources = aco.getAvailableResources();
-		if ((resourceDemand[Resource.MIPS.getIndex()] > availableResources[Resource.MIPS
-				.getIndex()])
-				|| (resourceDemand[Resource.CORES.getIndex()] > availableResources[Resource.CORES
-						.getIndex()])
-				|| (resourceDemand[Resource.BANDWIDTH.getIndex()] > availableResources[Resource.BANDWIDTH
-						.getIndex()])
-				|| (resourceDemand[Resource.STORAGE.getIndex()] > availableResources[Resource.STORAGE
-						.getIndex()])
-				|| (resourceDemand[Resource.RAM.getIndex()] > availableResources[Resource.RAM
-						.getIndex()]))
-			return false;
-		return true;
-	}
+//	private boolean checkSpaceConstraints(Item item) {
+//		int[] resourceDemand = item.getResourceDemand();
+//		int[] availableResources = aco.getAvailableResources();
+//		if ((resourceDemand[Resource.MIPS.getIndex()] > availableResources[Resource.MIPS
+//				.getIndex()])
+//				|| (resourceDemand[Resource.CORES.getIndex()] > availableResources[Resource.CORES
+//						.getIndex()])
+//				|| (resourceDemand[Resource.BANDWIDTH.getIndex()] > availableResources[Resource.BANDWIDTH
+//						.getIndex()])
+//				|| (resourceDemand[Resource.STORAGE.getIndex()] > availableResources[Resource.STORAGE
+//						.getIndex()])
+//				|| (resourceDemand[Resource.RAM.getIndex()] > availableResources[Resource.RAM
+//						.getIndex()]))
+//			return false;
+//		return true;
+//	}
 
 	// /**
 	// * @return the overflowItems

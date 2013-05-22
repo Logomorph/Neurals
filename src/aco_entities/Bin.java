@@ -7,6 +7,7 @@ public class Bin {
 
 	private int[] resourceCapacity;
 	private int[] binLoadVector;
+	private int id;
 	
 	private int status;
 
@@ -60,5 +61,19 @@ public class Bin {
 
 	public void setStatus(int status) {
 		this.status = status;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
 	}
 }

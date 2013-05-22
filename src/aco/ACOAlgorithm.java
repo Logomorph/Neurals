@@ -109,6 +109,7 @@ public class ACOAlgorithm {
 	}
 
 	public void run() {
+		System.out.println("aco runs");
 		int q;
 		int a;
 		int v;
@@ -132,7 +133,8 @@ public class ACOAlgorithm {
 					NB_OF_BINS);
 			if (leftoverItems != null)
 				for (Item item : leftoverItems) {
-					index = bins.indexOf(item.getDeploymentBin());
+					index = item.getDeploymentBin().getId();
+					//System.out.println("Index of bin: " + index);
 					x[items.indexOf(item)][index] = 1;
 					binLoadVector = computeBinLoadVector(index);
 					bins.get(index).setBinLoadVector(binLoadVector);
@@ -423,6 +425,7 @@ public class ACOAlgorithm {
 		Bin bin;
 		for (int i = 0; i < NB_OF_BINS; i++) {
 			bin = new Bin();
+			bin.setId(i);
 			bin.setResourceCapacity(resourceCapacity);
 			bins.add(bin);
 		}
