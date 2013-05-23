@@ -155,7 +155,7 @@ public class Base {
 			checkItemsTimer();
 			aco.setItems(items);
 		}
-		// if (aco.getItems() != null && aco.getItems().size() > 0) {
+
 		for (Item item : aco.getItems()) {
 			System.out.println("ACO items: "
 					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);

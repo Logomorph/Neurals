@@ -28,8 +28,8 @@ public class ACOAlgorithm {
 	public static final int NB_OF_ANTS = 4;
 
 	public static int NB_OF_BINS;
-	// public static int NB_OF_ITEMS;
-	private int NB_OF_ITEMS;
+	public static int NB_OF_ITEMS;
+	// private int NB_OF_ITEMS;
 
 	// private static double THRESHOLD = 0.3d;
 
@@ -105,7 +105,7 @@ public class ACOAlgorithm {
 				INITIAL_PHEROMONES);
 		niu = initializeNiu();
 		availableResources = Initializer.initializeAvailableResources(
-				bins.get(0), bins.size());
+				bins.get(0), NB_OF_BINS);
 	}
 
 	public void run() {
@@ -127,42 +127,37 @@ public class ACOAlgorithm {
 			}
 		for (q = 0; q < NB_OF_CYCLES; q++) {
 			index = -1;
-			// System.out.println("Cycle number " + q);
-
 			x = Initializer.initializeIndividualAntMatrix(NB_OF_ITEMS,
 					NB_OF_BINS);
+			for (Bin bin : bins) {
+				for (int k = 0; k < bin.getBinLoadVector().length; k++)
+					bin.getBinLoadVector()[k] = 0;
+				bin.setStatus(Bin.IS_OFF);
+			}
 			if (leftoverItems != null)
 				for (Item item : leftoverItems) {
 					index = item.getDeploymentBin().getId();
-					//System.out.println("Index of bin: " + index);
 					x[items.indexOf(item)][index] = 1;
 					binLoadVector = computeBinLoadVector(index);
 					bins.get(index).setBinLoadVector(binLoadVector);
+					bins.get(index).setStatus(Bin.IS_OFF);
 				}
-			for (Bin bin : bins) {
-				if (index != -1 && bins.indexOf(bin) != index) {
-					
-				}
-				else {
-					for (int k = 0; k < bin.getBinLoadVector().length; k++)
-						bin.getBinLoadVector()[k] = 0;
-					bin.setStatus(Bin.IS_OFF);
-				}
-			}
 
+			// if (index != -1)
+			// System.out.println("Bin index "
+			// + index
+			// + " has load "
+			// + bins.get(index).getBinLoadVector()[Resource.MIPS
+			// .getIndex()]);
 			for (a = 0; a < NB_OF_ANTS; a++) {
 				copyOfItemSet.clear();
 				for (Item item : items) {
 					copyOfItemSet.add(item);
 				}
-
 				v = 0;
-
 				while (copyOfItemSet.size() > 0 && v < NB_OF_BINS) {
-
 					setOfQualifiedItems = determineSetOfQualifiedItems(v,
 							copyOfItemSet);
-
 					if (setOfQualifiedItems.size() > 0) {
 						double sum = 0.0;
 						for (Item item : setOfQualifiedItems) {
@@ -171,7 +166,6 @@ public class ACOAlgorithm {
 									+ (Math.pow(pheromones[i][v], ALPHA) * Math
 											.pow(niu[i][v], BETA));
 						}
-
 						i = chooseItemWithLargestProbability(sum, v,
 								setOfQualifiedItems);
 						if (bins.get(v).getStatus() == Bin.IS_OFF) {
@@ -316,7 +310,10 @@ public class ACOAlgorithm {
 
 	private int[][] calculateBestCycleSolution(int[][] antSolution,
 			int[][] bestCycleSolution) {
-
+//		for (Item item : items) {
+//			System.out.println(items.indexOf(item) + ".Items in best cycle solution: "
+//					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+//		}
 		int total1 = 0;
 		int total2 = 0;
 		for (int i = 0; i < bins.size(); i++) {
