@@ -1,5 +1,6 @@
 package main;
 
+import monitor.*;
 import base.Base;
 
 public class MainClass {
@@ -10,6 +11,9 @@ public class MainClass {
 	public static void main(String[] args) {
 		// RunACO();
 		RunNNACO();
+		DCMonitor dcm = new DCMonitor();
+		System.out.println("IP address " + dcm.getVMMonitor(381).getIP());
+		
 	}
 
 	private static void RunNNACO() {
