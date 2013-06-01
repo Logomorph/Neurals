@@ -16,7 +16,7 @@ import aco_entities.Resource;
 public class Base {
 	private final static ACOAlgorithm aco = new ACOAlgorithm();
 	private Timer predictionTimer, acoTimer;
-	private List<Item> items;
+//	private List<Item> items;
 	private List<PredictionBox> pboxes;
 	private int predEpoch, acoEpoch;
 	private PredictionQueue itemsQueue;
@@ -48,8 +48,8 @@ public class Base {
 		resourceCapacity[Resource.BANDWIDTH.getIndex()] = numbers.get(6);
 
 		aco.initalizeBinsData(resourceCapacity);
-
-		items = new ArrayList<Item>();
+		List<Item> items = new ArrayList<Item>();
+		//items = new ArrayList<Item>();
 		pboxes = new ArrayList<PredictionBox>();
 		Item i;
 
@@ -76,7 +76,7 @@ public class Base {
 		overflowItems = new ArrayList<Item>();
 	}
 
-	public void Start() {
+	public void start() {
 		predictionTimer = new Timer();
 		predictionTimer.scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -94,7 +94,7 @@ public class Base {
 		}, 2 * 1000, ACO_INTERVAL);
 	}
 
-	public void Stop() {
+	public void stop() {
 		if (predictionTimer != null)
 			predictionTimer.cancel();
 		if (acoTimer != null)
@@ -102,15 +102,20 @@ public class Base {
 	}
 
 	private synchronized void updatePrediction() {
+		List<Item> items = new ArrayList<Item>();
 		System.out.println("---------------------------------");
 		System.out.println("Prediction epoch " + predEpoch);
 		System.out.println("---------------------------------");
 
-		if (acoEpoch == 0) {
-			items.clear();
+//		if (acoEpoch == 0) {
+//			items.clear();
+//		}
+		
+		// update all the items via neural nets
+		if(aco.getItems() != null && aco.getItems().size() > 0) {
+			items = aco.getItems();
 		}
 		checkItemsTimer();
-		// update all the items via neural nets
 		System.out.println("Items size: " + items.size());
 		for (int i = 0; i < pboxes.size(); i++) {
 			pboxes.get(i).Update();
@@ -124,32 +129,20 @@ public class Base {
 		}
 		itemsQueue.add(items);
 
-		if (predEpoch == 5)
+		if (predEpoch == 50)
 			predictionTimer.cancel();
 		predEpoch++;
 	}
 
 	private synchronized void updateACO() {
+		List<Item> items = new ArrayList<Item>();
 		System.out.println("---------------------------------");
 		System.out.println("ACO epoch " + acoEpoch);
 		System.out.println("---------------------------------");
 
 		if (itemsQueue.hasItems()) {
-			// System.out.println("has items");
 			List<Item> queueFront = itemsQueue.popFront();
-			// // ACOAlgorithm.NB_OF_ITEMS = queueFront.size();
-			// for (Item item : queueFront) {
-			// System.out.println("Prediction queue items: "
-			// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
-			// }
 			aco.setItems(queueFront);
-
-			// for (Item item : overflowItems) {
-			// System.out.println("Overflowed items after ACO runs: "
-			// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
-			// }
-			// }
-
 		} else {
 			items = aco.getItems();
 			checkItemsTimer();
@@ -172,7 +165,6 @@ public class Base {
 				&& aco.getGlobalBestSolution() != null) {
 
 			int[][] globalBestSolution = aco.getGlobalBestSolution();
-		//	boolean equalityFlag;
 			List<Bin> bins = aco.getBins();
 			for (int row = 0; row < aco.getNB_OF_ITEMS(); row++) {
 				for (int col = 0; col < ACOAlgorithm.NB_OF_BINS; col++) {
@@ -192,40 +184,40 @@ public class Base {
 				}
 			}
 		}
-		if (acoEpoch == 15)
-			Stop();
+		aco.setItems(items);
+		if (acoEpoch == 100)
+			stop();
 		acoEpoch++;
 	}
 
 	public void checkItemsTimer() {
+		List<Item> its = new ArrayList<Item>();
+		its = aco.getItems();
 		if (leftoverItems != null && leftoverItems.size() > 0)
 			leftoverItems.clear();
 		int row = 0;
-		while (row < items.size() && items.size() > 0) {
-			if (items.get(row).getEndRunTime() != null) {
-				if (!items.get(row).getEndRunTime().isRunning()) {
+		while (row < its.size() && its.size() > 0) {
+			if (its.get(row).getEndRunTime() != null) {
+				if (!its.get(row).getEndRunTime().isRunning()) {
 					System.out
 							.println("Remove item "
-									+ items.get(row).getResourceDemand()[Resource.MIPS
+									+ its.get(row).getResourceDemand()[Resource.MIPS
 											.getIndex()]
-									+ " nb "
-									+ row
 									+ " after "
-									+ items.get(row).getResourceDemand()[Resource.RUN_TIME
+									+ its.get(row).getResourceDemand()[Resource.RUN_TIME
 											.getIndex()]);
-					items.remove(row);
-					if (row == (items.size() + 1))
+					its.remove(row);
+					if (row == (its.size() + 1))
 						row--;
 				} else {
-					leftoverItems.add(items.get(row));
+					leftoverItems.add(its.get(row));
 					row++;
-					// System.out.println("Row " + row);
 				}
-			} else {
+			} else { 
 				row++;
 			}
 		}
-		aco.setItems(items);
+		aco.setItems(its);
 //		for (Item item : aco.getItems()) {
 //			System.out.println("Items after remove  "
 //					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
@@ -238,34 +230,4 @@ public class Base {
 
 	}
 
-//	private boolean checkSpaceConstraints(Item item) {
-//		int[] resourceDemand = item.getResourceDemand();
-//		int[] availableResources = aco.getAvailableResources();
-//		if ((resourceDemand[Resource.MIPS.getIndex()] > availableResources[Resource.MIPS
-//				.getIndex()])
-//				|| (resourceDemand[Resource.CORES.getIndex()] > availableResources[Resource.CORES
-//						.getIndex()])
-//				|| (resourceDemand[Resource.BANDWIDTH.getIndex()] > availableResources[Resource.BANDWIDTH
-//						.getIndex()])
-//				|| (resourceDemand[Resource.STORAGE.getIndex()] > availableResources[Resource.STORAGE
-//						.getIndex()])
-//				|| (resourceDemand[Resource.RAM.getIndex()] > availableResources[Resource.RAM
-//						.getIndex()]))
-//			return false;
-//		return true;
-//	}
-
-	// /**
-	// * @return the overflowItems
-	// */
-	// public List<Item> getOverflowItems() {
-	// return overflowItems;
-	// }
-	//
-	// /**
-	// * @param overflowItems the overflowItems to set
-	// */
-	// public void setOverflowItems(List<Item> overflowItems) {
-	// this.overflowItems = overflowItems;
-	// }
 }

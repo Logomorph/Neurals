@@ -12,7 +12,7 @@ public class Item {
 	private boolean toMigrate;
 	private int[] resourceDemand;
 
-	public static final int MIPS_MAX = 7000;
+	public static final int MIPS_MAX = 4000;
 	public static final int CORES_MAX = 10;
 	public static final int RAM_MAX = 15;
 	public static final int STORAGE_MAX = 500;
