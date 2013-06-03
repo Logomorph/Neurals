@@ -1,13 +1,9 @@
 package monitor_impl;
 
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -50,7 +46,7 @@ public class MonitorOpenNebula implements VMMonitor {
 		// parse the IP
 		try {
 			SAXBuilder builder = new SAXBuilder();
-
+			
 			// Should be parsed out of info, but the parsing fails, for some
 			// reason
 			Reader in = new StringReader(vm.monitoring().getMessage());
@@ -77,6 +73,7 @@ public class MonitorOpenNebula implements VMMonitor {
 	public boolean startMonitoring() {
 		if (vm == null)
 			return false;
+		reset();
 		monitorTimer = new Timer();
 		monitorTimer.scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -93,6 +90,13 @@ public class MonitorOpenNebula implements VMMonitor {
 			monitorTimer.cancel();
 	}
 
+	private void reset() {
+		cpuData.clear();
+		ramData.clear();
+		netUsageData.clear();
+		netUsageData.add(new MonitorData(0, 0));
+	}
+	
 	private void monitor() {
 		SAXBuilder builder = new SAXBuilder();
 		try {
@@ -134,8 +138,11 @@ public class MonitorOpenNebula implements VMMonitor {
 						int net_rx_val = Integer.parseInt(net_rx.getValue());
 						// netRxData.add(new Data(net_rx_val,lp));
 
-						netUsageData.add(new MonitorData(net_tx_val
-								+ net_rx_val, lp));
+						int total_net = net_tx_val + net_rx_val;
+						
+						MonitorData old = netUsageData.get(netUsageData.size()-1);
+						int data = (total_net - old.data) / (lp - old.timestamp);
+						netUsageData.add(new MonitorData(data, lp));
 						System.out.println("added value");
 					}
 					if (lp == lastCPU) {
@@ -167,8 +174,11 @@ public class MonitorOpenNebula implements VMMonitor {
 						int net_rx_val = Integer.parseInt(net_rx.getValue());
 						// netRxData.add(new Data(net_rx_val,lp));
 
-						netUsageData.add(new MonitorData(net_tx_val
-								+ net_rx_val, lp));
+						int total_net = net_tx_val + net_rx_val;
+						
+						MonitorData old = netUsageData.get(netUsageData.size()-1);
+						int data = (total_net - old.data) / (lp - old.timestamp);
+						netUsageData.add(new MonitorData(data, lp));
 						System.out.println("added value");
 					}
 				}

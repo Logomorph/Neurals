@@ -12,7 +12,7 @@ public class MainClass {
 		// RunACO();
 		RunNNACO();
 		DCMonitor dcm = new DCMonitor();
-		System.out.println("IP address " + dcm.getVMMonitor(381).getIP());
+		System.out.println("IP address " + dcm.getVMMonitor(382).getIP());
 		
 	}
 
