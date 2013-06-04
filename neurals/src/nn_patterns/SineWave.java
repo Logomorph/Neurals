@@ -7,13 +7,13 @@ import util.Util;
 public class SineWave extends PatternGenerator {
 
 	@Override
-	public double[] GeneratePattern(double verticalDisplacement) {
+	public double[] generatePattern(int length, double verticalDisplacement) {
 		Random r = new Random();
-		double[] data = new double[1000];
+		double[] data = new double[length];
 
 		double step = 0;
 		boolean up = true;
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < length; i++) {
 			//data[i] = Util.ScaleRange(Math.sin(step) + r.nextDouble(), -2, 2, -1, 1);
 			data[i] = verticalDisplacement + Math.sin(step);
 			if (up) {

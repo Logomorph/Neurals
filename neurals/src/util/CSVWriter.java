@@ -23,6 +23,14 @@ public class CSVWriter {
 		out.print("\n");
 	}
 	
+	public void WriteValue(double data) {
+		out.print(""+data+",");
+	}
+	
+	public void WriteNewLine() {
+		out.print("\n");
+	}
+	
 	public void WriteDataSet(DataSet ds) {
 		for(DataSetRow dsr : ds.GetRows()) {
 			for(double d : dsr.inputData)

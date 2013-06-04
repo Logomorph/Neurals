@@ -134,12 +134,12 @@ public class PredictionBox {
 	// all this is temporary
 	private void populateData() {
 		SineWave swg = new SineWave();
-		MIPS_data = swg.GeneratePattern(0);
-		CORES_data = swg.GeneratePattern(0);
-		RAM_data = swg.GeneratePattern(0);
-		STORAGE_data = swg.GeneratePattern(0);
-		BANDWIDTH_data = swg.GeneratePattern(0);
-		RUN_TIME_data = swg.GeneratePattern(0);
+		MIPS_data = swg.generatePattern(1000, 0);
+		CORES_data = swg.generatePattern(1000, 0);
+		RAM_data = swg.generatePattern(1000, 0);
+		STORAGE_data = swg.generatePattern(1000, 0);
+		BANDWIDTH_data = swg.generatePattern(1000, 0);
+		RUN_TIME_data = swg.generatePattern(1000, 0);
 		index = 2;
 	}
 
