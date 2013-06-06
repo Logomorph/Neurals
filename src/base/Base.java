@@ -54,7 +54,6 @@ public class Base {
 
 		aco.initalizeBinsData(resourceCapacity);
 		List<Item> items = new ArrayList<Item>();
-		// items = new ArrayList<Item>();
 		pboxes = new ArrayList<PredictionBox>();
 		Item i;
 
@@ -269,10 +268,9 @@ public class Base {
 										+ items.get(row).getResourceDemand()[Resource.MIPS
 												.getIndex()]);
 					}
-
 					row++;
 				}
-			} else {
+			} else { 
 				row++;
 			}
 		}
