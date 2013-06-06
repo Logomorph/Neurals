@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import util.GraphCSVWriter;
 import util.InputReader;
@@ -15,8 +17,9 @@ import aco_entities.Resource;
 
 public class Base {
 	private final static ACOAlgorithm aco = new ACOAlgorithm();
-	private Timer predictionTimer, acoTimer;
-	private List<Item> items;
+	private Timer predictionTimer;
+	private Timer acoTimer;
+	private final Lock lock = new ReentrantLock();
 	private List<PredictionBox> pboxes;
 	private int predEpoch, acoEpoch;
 	private PredictionQueue itemsQueue;
@@ -27,8 +30,10 @@ public class Base {
 
 	public static List<Item> overflowItems;
 	private List<Item> leftoverItems;
+	private List<Item> itemsToMigrate;
 
 	public Base() {
+		itemsToMigrate = new ArrayList<Item>();
 		leftoverItems = new ArrayList<Item>();
 		graphCSV = new GraphCSVWriter("vms.csv");
 
@@ -48,8 +53,8 @@ public class Base {
 		resourceCapacity[Resource.BANDWIDTH.getIndex()] = numbers.get(6);
 
 		aco.initalizeBinsData(resourceCapacity);
-
-		items = new ArrayList<Item>();
+		List<Item> items = new ArrayList<Item>();
+		// items = new ArrayList<Item>();
 		pboxes = new ArrayList<PredictionBox>();
 		Item i;
 
@@ -76,7 +81,7 @@ public class Base {
 		overflowItems = new ArrayList<Item>();
 	}
 
-	public void Start() {
+	public void start() {
 		predictionTimer = new Timer();
 		predictionTimer.scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -94,112 +99,148 @@ public class Base {
 		}, 2 * 1000, ACO_INTERVAL);
 	}
 
-	public void Stop() {
+	public void stop() {
 		if (predictionTimer != null)
 			predictionTimer.cancel();
 		if (acoTimer != null)
 			acoTimer.cancel();
 	}
 
-	private synchronized void updatePrediction() {
+	private void updatePrediction() {
+		lock.lock();
+		List<Item> items = new ArrayList<Item>();
 		System.out.println("---------------------------------");
 		System.out.println("Prediction epoch " + predEpoch);
 		System.out.println("---------------------------------");
 
-		if (acoEpoch == 0) {
-			items.clear();
+		// update all the items via neural nets
+		if (aco.getItems() != null && aco.getItems().size() > 0) {
+			items = aco.getItems();
 		}
 		checkItemsTimer();
-		// update all the items via neural nets
 		System.out.println("Items size: " + items.size());
 		for (int i = 0; i < pboxes.size(); i++) {
 			pboxes.get(i).Update();
-
 			if (aco.getAvailableResources() != null)
-				//if (checkSpaceConstraints(pboxes.get(i).getItem())) {
-					items.add(new Item(pboxes.get(i).getItem()));
-				//} else {
-					//overflowItems.add(pboxes.get(i).getItem());
-				//}
+				items.add(new Item(pboxes.get(i).getItem()));
 		}
 		itemsQueue.add(items);
 
 		if (predEpoch == 5)
 			predictionTimer.cancel();
 		predEpoch++;
+		lock.unlock();
 	}
 
-	private synchronized void updateACO() {
+	private void updateACO() {
+		lock.lock();
+		List<Item> items = new ArrayList<Item>();
 		System.out.println("---------------------------------");
 		System.out.println("ACO epoch " + acoEpoch);
 		System.out.println("---------------------------------");
 
 		if (itemsQueue.hasItems()) {
-			// System.out.println("has items");
 			List<Item> queueFront = itemsQueue.popFront();
-			// // ACOAlgorithm.NB_OF_ITEMS = queueFront.size();
-			// for (Item item : queueFront) {
-			// System.out.println("Prediction queue items: "
-			// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
-			// }
 			aco.setItems(queueFront);
-
-			// for (Item item : overflowItems) {
-			// System.out.println("Overflowed items after ACO runs: "
-			// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
-			// }
-			// }
-
 		} else {
 			items = aco.getItems();
 			checkItemsTimer();
 			aco.setItems(items);
 		}
-
+		int[] originalBinIds = null;
+		if (itemsToMigrate != null && itemsToMigrate.size() > 0) {
+			aco.getLeftoverItems().removeAll(itemsToMigrate);
+			originalBinIds = new int[itemsToMigrate.size()];
+			int i = 0;
+			for (Item item : itemsToMigrate) {
+				// System.out.println("Items to migrate before aco runs : "
+				// + item.getResourceDemand()[Resource.MIPS.getIndex()]
+				// + " in bin " + item.getDeploymentBin().getId());
+				originalBinIds[i] = item.getDeploymentBin().getId();
+				i++;
+			}
+		}
 		for (Item item : aco.getItems()) {
 			System.out.println("ACO items: "
 					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
 		}
 		aco.setNB_OF_ITEMS(aco.getItems().size());
+		//
+		// System.out.println("NB ITEMS " + aco.getNB_OF_ITEMS());
 
-		System.out.println("NB ITEMS " + aco.getNB_OF_ITEMS());
-		// if (aco.getNB_OF_ITEMS() > 0) {
 		aco.init();
 		aco.run();
-		// }
-		items = aco.getItems();
-		if (items != null && items.size() > 0
-				&& aco.getGlobalBestSolution() != null) {
+		boolean flag = true;
+		for (Item item : itemsToMigrate) {
+			if (overflowItems.contains(item)) {
+				System.out.println("Redo placement");
+				flag = false;
+				break;
+			}
+		}
+		if (flag) {
+			items = aco.getItems();
+			int binIdBeforeMigrate, binIdAfterMigrate;
 
-			int[][] globalBestSolution = aco.getGlobalBestSolution();
-		//	boolean equalityFlag;
-			List<Bin> bins = aco.getBins();
-			for (int row = 0; row < aco.getNB_OF_ITEMS(); row++) {
-				for (int col = 0; col < ACOAlgorithm.NB_OF_BINS; col++) {
+			if (items != null && items.size() > 0
+					&& aco.getGlobalBestSolution() != null) {
 
-					if (globalBestSolution[row][col] != 0) {
-						// deploy VM in corresponding Machine
-						System.out.println("Item " + row + " in bin " + col);
-						items.get(row).setDeploymentBin(bins.get(col));
-						if (items.get(row).getEndRunTime() == null
-								|| (items.get(row).getEndRunTime() != null && !items
-										.get(row).getEndRunTime().isRunning())) {
-							items.get(row).start();
+				int[][] globalBestSolution = aco.getGlobalBestSolution();
+				List<Bin> bins = aco.getBins();
+				for (int row = 0; row < aco.getNB_OF_ITEMS(); row++) {
+					for (int col = 0; col < ACOAlgorithm.NB_OF_BINS; col++) {
+
+						if (globalBestSolution[row][col] != 0) {
+							// deploy VM in corresponding Machine
+							System.out
+									.println("Item " + row + " in bin " + col);
+							items.get(row).setDeploymentBin(bins.get(col));
+							if (items.get(row).getEndRunTime() == null
+									|| (items.get(row).getEndRunTime() != null && !items
+											.get(row).getEndRunTime()
+											.isRunning())) {
+								items.get(row).start();
+							}
+							globalBestSolution[row][col] = 0;
+							break;
 						}
-						globalBestSolution[row][col] = 0;
-						break;
 					}
 				}
 			}
+			itemsToMigrate = aco.getItemsToMigrate();
+			int i = 0;
+			for (Item item : itemsToMigrate) {
+				binIdBeforeMigrate = originalBinIds[i++];
+				binIdAfterMigrate = items.get(items.indexOf(item))
+						.getDeploymentBin().getId();
+
+				if (binIdAfterMigrate != binIdBeforeMigrate) {
+					items.get(items.indexOf(item)).getEndRunTime().stop();
+					// delete + redeploy VM to NEW BIN
+					System.out.println("Migrate item " + items.indexOf(item)
+							+ " from " + binIdBeforeMigrate + " to "
+							+ binIdAfterMigrate);
+					items.get(items.indexOf(item)).getEndRunTime().start();
+				} else {
+					// no need to migrate
+					aco.getLeftoverItems().add(item);
+				}
+			}
+			aco.setItems(items);
 		}
 		if (acoEpoch == 15)
-			Stop();
+			stop();
 		acoEpoch++;
+		lock.unlock();
 	}
 
 	public void checkItemsTimer() {
+		List<Item> items = new ArrayList<Item>();
+		items = aco.getItems();
 		if (leftoverItems != null && leftoverItems.size() > 0)
 			leftoverItems.clear();
+		if (itemsToMigrate != null && itemsToMigrate.size() > 0)
+			itemsToMigrate.clear();
 		int row = 0;
 		while (row < items.size() && items.size() > 0) {
 			if (items.get(row).getEndRunTime() != null) {
@@ -208,8 +249,6 @@ public class Base {
 							.println("Remove item "
 									+ items.get(row).getResourceDemand()[Resource.MIPS
 											.getIndex()]
-									+ " nb "
-									+ row
 									+ " after "
 									+ items.get(row).getResourceDemand()[Resource.RUN_TIME
 											.getIndex()]);
@@ -218,54 +257,28 @@ public class Base {
 						row--;
 				} else {
 					leftoverItems.add(items.get(row));
+					if (items.get(row).getDeploymentBin().isMigrateTrigger() == true) {
+						itemsToMigrate.add(items.get(row));
+						System.out
+								.println("Item "
+										+ row
+										+ " in bin "
+										+ items.get(row).getDeploymentBin()
+												.getId()
+										+ " set to migrate with "
+										+ items.get(row).getResourceDemand()[Resource.MIPS
+												.getIndex()]);
+					}
+
 					row++;
-					// System.out.println("Row " + row);
 				}
 			} else {
 				row++;
 			}
 		}
 		aco.setItems(items);
-//		for (Item item : aco.getItems()) {
-//			System.out.println("Items after remove  "
-//					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
-//		}
-//		for (Item item : leftoverItems) {
-//			System.out.println("Leftover item "
-//					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
-//		}
 		aco.setLeftoverItems(leftoverItems);
-
+		aco.setItemsToMigrate(itemsToMigrate);
 	}
 
-//	private boolean checkSpaceConstraints(Item item) {
-//		int[] resourceDemand = item.getResourceDemand();
-//		int[] availableResources = aco.getAvailableResources();
-//		if ((resourceDemand[Resource.MIPS.getIndex()] > availableResources[Resource.MIPS
-//				.getIndex()])
-//				|| (resourceDemand[Resource.CORES.getIndex()] > availableResources[Resource.CORES
-//						.getIndex()])
-//				|| (resourceDemand[Resource.BANDWIDTH.getIndex()] > availableResources[Resource.BANDWIDTH
-//						.getIndex()])
-//				|| (resourceDemand[Resource.STORAGE.getIndex()] > availableResources[Resource.STORAGE
-//						.getIndex()])
-//				|| (resourceDemand[Resource.RAM.getIndex()] > availableResources[Resource.RAM
-//						.getIndex()]))
-//			return false;
-//		return true;
-//	}
-
-	// /**
-	// * @return the overflowItems
-	// */
-	// public List<Item> getOverflowItems() {
-	// return overflowItems;
-	// }
-	//
-	// /**
-	// * @param overflowItems the overflowItems to set
-	// */
-	// public void setOverflowItems(List<Item> overflowItems) {
-	// this.overflowItems = overflowItems;
-	// }
 }
