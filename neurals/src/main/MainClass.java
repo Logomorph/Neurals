@@ -9,7 +9,11 @@ import neuralnet.Network;
 import nn_data.DataSet;
 import nn_data.DataSetRow;
 import nn_learning.Learner;
+import nn_patterns.Exp;
 import nn_patterns.Line;
+import nn_patterns.SineWave;
+import nn_patterns.SlopedLine;
+import nn_transfer.Sigmoid;
 import nn_transfer.Sin;
 import base.Base;
 
@@ -74,10 +78,19 @@ public class MainClass {
 
 	private static void RunNN() {
 		Line ln_gen = new Line();
-		double[] data = ln_gen.generatePattern(100, 0);
-		Layer in = new Layer(3, new Sin(), false);
-		Layer hidden = new Layer(2, new Sin(), false);
-		Layer out = new Layer(1, new Sin(), false);
+		SineWave sw_gen = new SineWave();
+		Exp exp_gen = new Exp();
+		SlopedLine sloped_gen = new SlopedLine();
+
+		DataSet line = Util.createDataSet(ln_gen.generatePattern(100, 0),3, 1);		
+		DataSet test_line = Util.createDataSet(ln_gen.generatePattern(100, 0),3,1);
+		DataSet sine_wave = Util.createDataSet(sw_gen.generatePattern(100, 0),3,1);
+		DataSet exp = Util.createDataSet(exp_gen.generatePattern(100, 0), 3, 1);
+		DataSet sloped = Util.createDataSet(sloped_gen.generatePattern(100, 0), 3, 1);
+		
+		Layer in = new Layer(3, new Sigmoid(), false);
+		Layer hidden = new Layer(2, new Sigmoid(), false);
+		Layer out = new Layer(1, new Sigmoid(), false);
 
 		in.connectLayers(hidden);
 		hidden.connectLayers(out);
@@ -91,16 +104,17 @@ public class MainClass {
 
 		// train the network with sine data set
 		System.out.println("Started training");
-		DataSet ds = Util.createDataSet(data, 3, 1);
 		Learner l = new Learner(net, 0.8);
 
-		for (int i = 0; i < 50; i++)
-			l.TrainNetwork(ds);
+		//for (int i = 0; i < 50; i++) {
+			//l.TrainNetwork(sine_wave,0.01d);
+			l.TrainNetwork(line,0.001d);
+			//l.TrainNetwork(exp,0.01d);
+		//}
 		System.out.println("Done training");
 
 		System.out.println("Started testing");
-		DataSet test_line = Util.createDataSet(ln_gen.generatePattern(100, 0),
-				3, 1);
+
 
 		CSVWriter csvw = new CSVWriter();
 		try {
@@ -108,9 +122,33 @@ public class MainClass {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		csvw.WriteDataSetOutput(sloped);
+		csvw.WriteDataSetOutput(sine_wave);
 		csvw.WriteDataSetOutput(test_line);
+		csvw.WriteDataSetOutput(exp);
 
+		for (DataSetRow dsr : sloped.GetRows()) {
+			net.setInput(dsr.inputData);
+			net.Process();
+			csvw.WriteValue(net.getOutput()[0]);
+		}
+		csvw.WriteNewLine();
+
+		for (DataSetRow dsr : sine_wave.GetRows()) {
+			net.setInput(dsr.inputData);
+			net.Process();
+			csvw.WriteValue(net.getOutput()[0]);
+		}
+		csvw.WriteNewLine();
+		
 		for (DataSetRow dsr : test_line.GetRows()) {
+			net.setInput(dsr.inputData);
+			net.Process();
+			csvw.WriteValue(net.getOutput()[0]);
+		}
+		csvw.WriteNewLine();
+
+		for (DataSetRow dsr : exp.GetRows()) {
 			net.setInput(dsr.inputData);
 			net.Process();
 			csvw.WriteValue(net.getOutput()[0]);
