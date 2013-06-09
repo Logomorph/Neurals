@@ -24,8 +24,8 @@ public class SineWave extends PatternGenerator {
 				}
 			} else {
 				step -= 0.05;
-				if (step < -1) {
-					step = -1;
+				if (step < 0) {
+					step = 0;
 					up = true;
 				}
 			}

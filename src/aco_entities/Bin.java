@@ -7,12 +7,15 @@ public class Bin {
 
 	private int[] resourceCapacity;
 	private int[] binLoadVector;
+	private int id;
+	private boolean migrateTrigger;
 	
 	private int status;
 
 	public Bin() {
 		resourceCapacity = new int[Resource.values().length];
 		binLoadVector = new int[Resource.values().length];
+		migrateTrigger = false;
 	}
 	
 	public int[] removeItemLoad(int[] resourceDemand) {
@@ -60,5 +63,33 @@ public class Bin {
 
 	public void setStatus(int status) {
 		this.status = status;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the migrateTrigger
+	 */
+	public boolean isMigrateTrigger() {
+		return migrateTrigger;
+	}
+
+	/**
+	 * @param migrateTrigger the migrateTrigger to set
+	 */
+	public void setMigrateTrigger(boolean migrateTrigger) {
+		this.migrateTrigger = migrateTrigger;
 	}
 }

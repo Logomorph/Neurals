@@ -26,7 +26,7 @@ public class MainClass {
 
 	private static void RunNNACO() {
 		Base b = new Base();
-		b.Start();
+		b.start();
 
 	}
 

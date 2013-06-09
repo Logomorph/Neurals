@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import base.Base;
+
 import util.Initializer;
 import aco_entities.Bin;
 import aco_entities.Item;
@@ -27,8 +29,9 @@ public class ACOAlgorithm {
 
 	public static int NB_OF_BINS;
 	public static int NB_OF_ITEMS;
+	// private int NB_OF_ITEMS;
 
-	// private static double THRESHOLD = 0.3d;
+	private static double THRESHOLD = 0.3d;
 
 	private double[][] pheromones;
 	private double tauMax;
@@ -36,6 +39,7 @@ public class ACOAlgorithm {
 	private double[][] deltaTauBest;
 
 	private List<Bin> bins = new ArrayList<Bin>(NB_OF_BINS);
+	private List<Bin> adjustedBins = new ArrayList<Bin>(NB_OF_BINS);
 	private List<Item> items = new ArrayList<Item>(NB_OF_ITEMS);
 
 	private int[][] bestCycleSolution;
@@ -46,7 +50,9 @@ public class ACOAlgorithm {
 	private double[][] probabilities;
 	private double[][] niu;
 
-	private List<Bin> leftoverBins;
+	private List<Item> leftoverItems;
+	private List<Item> itemsToMigrate;
+	private int[] availableResources;
 
 	public double[][] initializeNiu() {
 		double[][] temp = new double[items.size()][bins.size()];
@@ -99,21 +105,41 @@ public class ACOAlgorithm {
 		deltaTauBest = Initializer.initializeDeltaTau(NB_OF_ITEMS, NB_OF_BINS,
 				INITIAL_PHEROMONES);
 		niu = initializeNiu();
+		availableResources = Initializer.initializeAvailableResources(
+				bins.get(0), NB_OF_BINS);
+	}
+
+	public void adjustBinLoad(List<Item> leftoverItems) {
+		int index;
+		if (leftoverItems != null)
+			for (Item item : leftoverItems) {
+				// if (!itemsToMigrate.contains(item)) {
+				// System.out.println("Don't migrate item!");
+				index = item.getDeploymentBin().getId();
+				x[items.indexOf(item)][index] = 1;
+				bins.get(index).setBinLoadVector(computeBinLoadVector(index));
+				bins.get(index).setStatus(Bin.IS_OFF);
+			}
 	}
 
 	public void run() {
+//		System.out.println("aco runs");
 		int q;
 		int a;
 		int v;
 		int i;
-
 		List<Item> copyOfItemSet = new ArrayList<Item>();
 		List<Item> setOfQualifiedItems = new ArrayList<Item>();
-
+//		int index;
 		int[] binLoadVector;
-
+		if (leftoverItems != null)
+			for (Item item : leftoverItems) {
+				System.out.println("leftover item " + items.indexOf(item)
+						+ " : "
+						+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+			}
 		for (q = 0; q < NB_OF_CYCLES; q++) {
-			System.out.println("Cycle number " + q);
+			// index = -1;
 			x = Initializer.initializeIndividualAntMatrix(NB_OF_ITEMS,
 					NB_OF_BINS);
 			for (Bin bin : bins) {
@@ -122,19 +148,17 @@ public class ACOAlgorithm {
 				bin.setStatus(Bin.IS_OFF);
 			}
 
+			adjustBinLoad(leftoverItems);
+
 			for (a = 0; a < NB_OF_ANTS; a++) {
 				copyOfItemSet.clear();
 				for (Item item : items) {
 					copyOfItemSet.add(item);
 				}
-
 				v = 0;
-
 				while (copyOfItemSet.size() > 0 && v < NB_OF_BINS) {
-
 					setOfQualifiedItems = determineSetOfQualifiedItems(v,
 							copyOfItemSet);
-
 					if (setOfQualifiedItems.size() > 0) {
 						double sum = 0.0;
 						for (Item item : setOfQualifiedItems) {
@@ -143,20 +167,19 @@ public class ACOAlgorithm {
 									+ (Math.pow(pheromones[i][v], ALPHA) * Math
 											.pow(niu[i][v], BETA));
 						}
-
 						i = chooseItemWithLargestProbability(sum, v,
 								setOfQualifiedItems);
 						if (bins.get(v).getStatus() == Bin.IS_OFF) {
 							bins.get(v).turnON();
 						}
 						x[i][v] = 1;
-						System.out.println("item " + i + " with size: "
-								+ items.get(i).getValueSet()[0] + ", "
-								+ items.get(i).getValueSet()[1] + ", "
-								+ items.get(i).getValueSet()[2] + ", "
-								+ items.get(i).getValueSet()[3] + ", "
-								+ items.get(i).getValueSet()[4] + " in bin "
-								+ v);
+						// System.out.println("item " + i + " with size: "
+						// + items.get(i).getValueSet()[0] + ", "
+						// + items.get(i).getValueSet()[1] + ", "
+						// + items.get(i).getValueSet()[2] + ", "
+						// + items.get(i).getValueSet()[3] + ", "
+						// + items.get(i).getValueSet()[4] + " in bin "
+						// + v);
 						x[items.size()][v] = 1;
 						niu[i][v] = adjustNiu(i, v);
 						copyOfItemSet.remove(items.get(i));
@@ -186,6 +209,10 @@ public class ACOAlgorithm {
 				}
 			}
 			pheromones = adjustPheromones();
+			// if (itemsToMigrate != null && itemsToMigrate.size() > 0) {
+			// items.clear();
+			// items.addAll(originalItems);
+			// }
 
 		}
 
@@ -202,25 +229,87 @@ public class ACOAlgorithm {
 				}
 			}
 			bins.get(col).setBinLoadVector(binLoadVector);
+			if (underThreshold(bins.get(col))) {
+
+				// System.out.println("Migrate from bin " + col + " with load: "
+				// + bins.get(col).getBinLoadVector()[0] + ", "
+				// + bins.get(col).getBinLoadVector()[1] + ", "
+				// + bins.get(col).getBinLoadVector()[2] + ", "
+				// + bins.get(col).getBinLoadVector()[3] + ", "
+				// + bins.get(col).getBinLoadVector()[4]);
+				bins.get(col).setMigrateTrigger(true);
+
+				// } else {
+				// System.out.println("No migrate necessary from bin " + col +
+				// " with load: "
+				// + bins.get(col).getBinLoadVector()[0] + ", "
+				// + bins.get(col).getBinLoadVector()[1] + ", "
+				// + bins.get(col).getBinLoadVector()[2] + ", "
+				// + bins.get(col).getBinLoadVector()[3] + ", "
+				// + bins.get(col).getBinLoadVector()[4]);
+			}
 		}
 
+		determineAvailableResources();
+		boolean flag;
 		try {
 			// Create file
 			FileWriter fstream = new FileWriter("out.txt");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("Global best solution: \n");
 			for (i = 0; i < items.size(); i++) {
+				flag = false;
 				for (int b = 0; b < bins.size(); b++) {
+					// System.out.print(globalBestSolution[i][b] + " ");
 					out.write(globalBestSolution[i][b] + " ");
 					if (x[items.size()][b] == 0)
 						bins.get(b).turnOff();
+					if (globalBestSolution[i][b] != 0) {
+						flag = true;
+						// System.out.println("here");
+					}
+				}
+				if (!flag && (!Base.overflowItems.contains(items.get(i)))) {
+					Base.overflowItems.add(items.get(i));
+					System.out.println("Overflowed item "
+							+ i
+							+ " added to queue: "
+							+ items.get(i).getResourceDemand()[Resource.MIPS
+									.getIndex()]);
 				}
 				out.write("\n");
+				// System.out.println();
 			}
 			out.close();
 		} catch (Exception e) {// Catch exception if any
 			System.err.println("Error: " + e.getMessage());
 		}
+		// for(Item item : Base.overflowItems) {
+		// System.out.println("Remaining overflowed items: " +
+		// item.getResourceDemand()[Resource.MIPS.getIndex()]);
+		// }
+	}
+
+	private void determineAvailableResources() {
+		availableResources = new int[Resource.values().length - 1];
+		for (Bin bin : bins) {
+			availableResources[Resource.MIPS.getIndex()] += (bin
+					.getResourceCapacity()[Resource.MIPS.getIndex()] - bin
+					.getBinLoadVector()[Resource.MIPS.getIndex()]);
+			availableResources[Resource.CORES.getIndex()] += (bin
+					.getResourceCapacity()[Resource.CORES.getIndex()] - bin
+					.getBinLoadVector()[Resource.CORES.getIndex()]);
+			availableResources[Resource.BANDWIDTH.getIndex()] += (bin
+					.getResourceCapacity()[Resource.BANDWIDTH.getIndex()] - bin
+					.getBinLoadVector()[Resource.BANDWIDTH.getIndex()]);
+			availableResources[Resource.RAM.getIndex()] += (bin
+					.getResourceCapacity()[Resource.RAM.getIndex()] - bin
+					.getBinLoadVector()[Resource.RAM.getIndex()]);
+			availableResources[Resource.STORAGE.getIndex()] += (bin
+					.getResourceCapacity()[Resource.STORAGE.getIndex()] - bin
+					.getBinLoadVector()[Resource.STORAGE.getIndex()]);
+		}
+
 	}
 
 	private double[][] adjustPheromones() {
@@ -245,7 +334,11 @@ public class ACOAlgorithm {
 
 	private int[][] calculateBestCycleSolution(int[][] antSolution,
 			int[][] bestCycleSolution) {
-
+		// for (Item item : items) {
+		// System.out.println(items.indexOf(item) +
+		// ".Items in best cycle solution: "
+		// + item.getResourceDemand()[Resource.MIPS.getIndex()]);
+		// }
 		int total1 = 0;
 		int total2 = 0;
 		for (int i = 0; i < bins.size(); i++) {
@@ -354,10 +447,24 @@ public class ACOAlgorithm {
 		Bin bin;
 		for (int i = 0; i < NB_OF_BINS; i++) {
 			bin = new Bin();
+			bin.setId(i);
 			bin.setResourceCapacity(resourceCapacity);
 			bins.add(bin);
 		}
 		return bins;
+	}
+
+	public boolean underThreshold(Bin bin) {
+		boolean belowThreshold = true;
+		int[] resourceCapacity = bin.getResourceCapacity();
+		int[] binLoad = bin.getBinLoadVector();
+		for (int r = 0; r < Resource.values().length - 1 && belowThreshold; r++) {
+			if (binLoad[r] > resourceCapacity[r] * (1 - THRESHOLD)
+					|| (binLoad[r] == 0 && r != Resource.values().length - 1)) {
+				belowThreshold = false;
+			}
+		}
+		return belowThreshold;
 	}
 
 	public List<Bin> getBins() {
@@ -396,17 +503,69 @@ public class ACOAlgorithm {
 	}
 
 	/**
-	 * @return the leftoverBins
+	 * @return the availableResources
 	 */
-	public List<Bin> getLeftoverBins() {
-		return leftoverBins;
+	public int[] getAvailableResources() {
+		return availableResources;
 	}
 
 	/**
-	 * @param leftoverBins
-	 *            the leftoverBins to set
+	 * @param availableResources
+	 *            the availableResources to set
 	 */
-	public void setLeftoverBins(List<Bin> leftoverBins) {
-		this.leftoverBins = leftoverBins;
+	public void setAvailableResources(int[] availableResources) {
+		this.availableResources = availableResources;
+	}
+
+	/**
+	 * @return the nB_OF_ITEMS
+	 */
+	public int getNB_OF_ITEMS() {
+		return NB_OF_ITEMS;
+	}
+
+	/**
+	 * @param nB_OF_ITEMS
+	 *            the nB_OF_ITEMS to set
+	 */
+	public void setNB_OF_ITEMS(int nB_OF_ITEMS) {
+		NB_OF_ITEMS = nB_OF_ITEMS;
+	}
+
+	/**
+	 * @return the leftoverItems
+	 */
+	public List<Item> getLeftoverItems() {
+		return leftoverItems;
+	}
+
+	/**
+	 * @param leftoverItems
+	 *            the leftoverItems to set
+	 */
+	public void setLeftoverItems(List<Item> leftoverItems) {
+		this.leftoverItems = leftoverItems;
+	}
+
+	public List<Item> getItemsToMigrate() {
+		return itemsToMigrate;
+	}
+
+	public void setItemsToMigrate(List<Item> itemsToMigrate) {
+		this.itemsToMigrate = itemsToMigrate;
+	}
+
+	/**
+	 * @return the adjustedBins
+	 */
+	public List<Bin> getAdjustedBins() {
+		return adjustedBins;
+	}
+
+	/**
+	 * @param adjustedBins the adjustedBins to set
+	 */
+	public void setAdjustedBins(List<Bin> adjustedBins) {
+		this.adjustedBins = adjustedBins;
 	}
 }
