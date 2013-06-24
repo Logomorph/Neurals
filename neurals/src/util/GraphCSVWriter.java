@@ -26,13 +26,13 @@ public class GraphCSVWriter {
 		closeFile();
 	}
 
-	public void addLine(String item, int mips, int ram, int cores, int storage,
+	public void addLine(String item, int mips, int ram, int storage,
 			int bw, int rt) {
 		openFile(true);
 		try {
 			String ts = new SimpleDateFormat("dd/MM/yyyy:HH:MM:ss")
 					.format(new Date());
-			writer.write(ts + "," + item + "," + mips + "," + ram + "," + cores
+			writer.write(ts + "," + item + "," + mips + "," + ram 
 					+ "," + storage + "," + bw + "," + rt + "\n");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

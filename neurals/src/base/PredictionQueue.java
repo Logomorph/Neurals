@@ -3,7 +3,7 @@ package base;
 import java.util.ArrayList;
 import java.util.List;
 
-import aco_entities.Item;
+import aco.entities.Item;
 
 public class PredictionQueue {
 	private class QueueItem {

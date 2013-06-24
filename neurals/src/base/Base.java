@@ -11,9 +11,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import util.GraphCSVWriter;
 import util.InputReader;
 import aco.ACOAlgorithm;
-import aco_entities.Bin;
-import aco_entities.Item;
-import aco_entities.Resource;
+import aco.entities.Bin;
+import aco.entities.Item;
+import aco.entities.Resource;
 
 public class Base {
 	private final static ACOAlgorithm aco = new ACOAlgorithm();
@@ -43,28 +43,26 @@ public class Base {
 				.readData();
 
 		ACOAlgorithm.NB_OF_BINS = numbers.get(0);
-		aco.setNB_OF_ITEMS(numbers.get(1));
+		aco.setNbOfItems(numbers.get(1));
 
 		int[] resourceCapacity = new int[Resource.values().length - 1];
-		resourceCapacity[Resource.MIPS.getIndex()] = numbers.get(2);
-		resourceCapacity[Resource.CORES.getIndex()] = numbers.get(3);
-		resourceCapacity[Resource.RAM.getIndex()] = numbers.get(4);
-		resourceCapacity[Resource.STORAGE.getIndex()] = numbers.get(5);
-		resourceCapacity[Resource.BANDWIDTH.getIndex()] = numbers.get(6);
+		resourceCapacity[Resource.CPU.getIndex()] = numbers.get(2);
+		resourceCapacity[Resource.RAM.getIndex()] = numbers.get(3);
+		resourceCapacity[Resource.STORAGE.getIndex()] = numbers.get(4);
+		resourceCapacity[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = numbers.get(5);
 
 		aco.initalizeBinsData(resourceCapacity);
 		List<Item> items = new ArrayList<Item>();
 		pboxes = new ArrayList<PredictionBox>();
 		Item i;
 
-		for (int s = 7; s < numbers.size(); s += 6) {
+		for (int s = 6; s < numbers.size(); s += 5) {
 			int[] resourceDemand = new int[Resource.values().length];
-			resourceDemand[Resource.MIPS.getIndex()] = numbers.get(s);
-			resourceDemand[Resource.CORES.getIndex()] = numbers.get(s + 1);
-			resourceDemand[Resource.RAM.getIndex()] = numbers.get(s + 2);
-			resourceDemand[Resource.STORAGE.getIndex()] = numbers.get(s + 3);
-			resourceDemand[Resource.BANDWIDTH.getIndex()] = numbers.get(s + 4);
-			resourceDemand[Resource.RUN_TIME.getIndex()] = numbers.get(s + 5);
+			resourceDemand[Resource.CPU.getIndex()] = numbers.get(s);
+			resourceDemand[Resource.RAM.getIndex()] = numbers.get(s + 1);
+			resourceDemand[Resource.STORAGE.getIndex()] = numbers.get(s + 2);
+			resourceDemand[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = numbers.get(s + 3);
+			resourceDemand[Resource.RUN_TIME.getIndex()] = numbers.get(s + 4);
 
 			i = new Item();
 			i.setResourceDemand(resourceDemand);
@@ -125,7 +123,7 @@ public class Base {
 		}
 		itemsQueue.add(items);
 
-		if (predEpoch == 5)
+		if (predEpoch == 25)
 			predictionTimer.cancel();
 		predEpoch++;
 		lock.unlock();
@@ -160,13 +158,14 @@ public class Base {
 			}
 		}
 		for (Item item : aco.getItems()) {
-			System.out.println("ACO items: "
-					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+			System.out.println("ACO item " + aco.getItems().indexOf(item) + " resource demands: "
+					+ item.getResourceDemand()[Resource.CPU.getIndex()] + ", "
+					+ item.getResourceDemand()[Resource.RAM.getIndex()] + ", "
+				    + item.getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
+				    + item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
+				    + item.getResourceDemand()[Resource.RUN_TIME.getIndex()] + ", ");
 		}
-		aco.setNB_OF_ITEMS(aco.getItems().size());
-		//
-		// System.out.println("NB ITEMS " + aco.getNB_OF_ITEMS());
-
+		aco.setNbOfItems(aco.getItems().size());
 		aco.init();
 		aco.run();
 		boolean flag = true;
@@ -186,13 +185,13 @@ public class Base {
 
 				int[][] globalBestSolution = aco.getGlobalBestSolution();
 				List<Bin> bins = aco.getBins();
-				for (int row = 0; row < aco.getNB_OF_ITEMS(); row++) {
+				for (int row = 0; row < aco.getNbOfItems(); row++) {
 					for (int col = 0; col < ACOAlgorithm.NB_OF_BINS; col++) {
 
 						if (globalBestSolution[row][col] != 0) {
 							// deploy VM in corresponding Machine
 							System.out
-									.println("Item " + row + " in bin " + col);
+									.println("Item " + row + " assigned to bin " + col);
 							items.get(row).setDeploymentBin(bins.get(col));
 							if (items.get(row).getEndRunTime() == null
 									|| (items.get(row).getEndRunTime() != null && !items
@@ -227,7 +226,7 @@ public class Base {
 			}
 			aco.setItems(items);
 		}
-		if (acoEpoch == 15)
+		if (acoEpoch == 50)
 			stop();
 		acoEpoch++;
 		lock.unlock();
@@ -246,12 +245,14 @@ public class Base {
 				if (!items.get(row).getEndRunTime().isRunning()) {
 					System.out
 							.println("Remove item "
-									+ items.get(row).getResourceDemand()[Resource.MIPS
-											.getIndex()]
+//									+ items.get(row).getResourceDemand()[Resource.CPU
+//											.getIndex()]
+									+ row
 									+ " after "
 									+ items.get(row).getResourceDemand()[Resource.RUN_TIME
 											.getIndex()]);
 					items.remove(row);
+					//delete VM from pool
 					if (row == (items.size() + 1))
 						row--;
 				} else {
@@ -264,9 +265,10 @@ public class Base {
 										+ " in bin "
 										+ items.get(row).getDeploymentBin()
 												.getId()
-										+ " set to migrate with "
-										+ items.get(row).getResourceDemand()[Resource.MIPS
-												.getIndex()]);
+										+ " set to migrate");
+//										+ " set to migrate with "
+//										+ items.get(row).getResourceDemand()[Resource.CPU
+//												.getIndex()]);
 					}
 					row++;
 				}

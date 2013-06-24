@@ -1,19 +1,16 @@
 package util;
 
-import aco_entities.Bin;
-import aco_entities.Resource;
+import aco.entities.Bin;
+import aco.entities.Resource;
 
 public class Initializer {
 
 	public static int[] initializeAvailableResources(Bin bin, int numberOfBins) {
 		int[] availableResources = new int[Resource.values().length - 1];
-		availableResources[Resource.MIPS.getIndex()] = bin
-				.getResourceCapacity()[Resource.MIPS.getIndex()] * numberOfBins;
-		availableResources[Resource.CORES.getIndex()] = bin
-				.getResourceCapacity()[Resource.CORES.getIndex()]
-				* numberOfBins;
-		availableResources[Resource.BANDWIDTH.getIndex()] = bin
-				.getResourceCapacity()[Resource.BANDWIDTH.getIndex()]
+		availableResources[Resource.CPU.getIndex()] = bin
+				.getResourceCapacity()[Resource.CPU.getIndex()] * numberOfBins;
+		availableResources[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = bin
+				.getResourceCapacity()[Resource.NETWORK_TRANSFER_SPEED.getIndex()]
 				* numberOfBins;
 		availableResources[Resource.RAM.getIndex()] = bin.getResourceCapacity()[Resource.RAM
 				.getIndex()] * numberOfBins;

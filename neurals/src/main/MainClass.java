@@ -20,8 +20,8 @@ import base.Base;
 public class MainClass {
 	public static void main(String[] args) {
 		// RunACO();
-		//RunNNACO();
-		RunNN();
+		RunNNACO();
+		//RunNN();
 	}
 
 	private static void RunNNACO() {
