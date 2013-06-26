@@ -1,4 +1,4 @@
-package aco_entities;
+package aco.entities;
 
 public class Bin {
 
@@ -9,6 +9,7 @@ public class Bin {
 	private int[] binLoadVector;
 	private int id;
 	private boolean migrateTrigger;
+	private int naturalId;
 	
 	private int status;
 
@@ -91,5 +92,13 @@ public class Bin {
 	 */
 	public void setMigrateTrigger(boolean migrateTrigger) {
 		this.migrateTrigger = migrateTrigger;
+	}
+
+	public int getNaturalId() {
+		return naturalId;
+	}
+
+	public void setNaturalId(int naturalId) {
+		this.naturalId = naturalId;
 	}
 }

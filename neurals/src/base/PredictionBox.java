@@ -8,8 +8,8 @@ import nn_learning.Learner;
 import nn_patterns.SineWave;
 import nn_transfer.Sin;
 import util.GraphCSVWriter;
-import aco_entities.Item;
-import aco_entities.Resource;
+import aco.entities.Item;
+import aco.entities.Resource;
 
 /*
  * Contains all the neural networks needed for predicting data for one VM

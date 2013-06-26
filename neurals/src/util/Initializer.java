@@ -1,7 +1,7 @@
 package util;
 
-import aco_entities.Bin;
-import aco_entities.Resource;
+import aco.entities.Bin;
+import aco.entities.Resource;
 
 public class Initializer {
 

@@ -8,10 +8,10 @@ import java.util.List;
 import base.Base;
 
 import util.Initializer;
-import aco_entities.Bin;
-import aco_entities.Item;
-import aco_entities.Pheromones;
-import aco_entities.Resource;
+import aco.entities.Bin;
+import aco.entities.Item;
+import aco.entities.Pheromones;
+import aco.entities.Resource;
 
 public class ACOAlgorithm {
 
@@ -113,12 +113,10 @@ public class ACOAlgorithm {
 		int index;
 		if (leftoverItems != null)
 			for (Item item : leftoverItems) {
-				// if (!itemsToMigrate.contains(item)) {
-				// System.out.println("Don't migrate item!");
 				index = item.getDeploymentBin().getId();
 				x[items.indexOf(item)][index] = 1;
 				bins.get(index).setBinLoadVector(computeBinLoadVector(index));
-				bins.get(index).setStatus(Bin.IS_OFF);
+				bins.get(index).setStatus(Bin.IS_ON);
 			}
 	}
 

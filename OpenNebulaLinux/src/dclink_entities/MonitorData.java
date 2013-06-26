@@ -1,4 +1,4 @@
-package monitor;
+package dclink_entities;
 
 public class MonitorData {
 	public MonitorData(int data, int time) {

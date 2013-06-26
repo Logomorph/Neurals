@@ -1,4 +1,4 @@
-package monitor_impl;
+package dclink_impl;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -11,13 +11,20 @@ import org.jdom2.CDATA;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
+import org.opennebula.client.Client;
+import org.opennebula.client.OneResponse;
+import org.opennebula.client.template.Template;
+import org.opennebula.client.template.TemplatePool;
 import org.opennebula.client.vm.VirtualMachine;
 
-import monitor.MonitorData;
-import monitor.VMMonitor;
+import dclink_entities.MonitorData;
+import dclink_if.VMMonitor;
+
 
 public class MonitorOpenNebula implements VMMonitor {
 	VirtualMachine vm;
+	Template vmTemplate;
+	Client oneClient;
 	int MONITOR_INTERVAl = 10 * 1000;
 	Timer monitorTimer;
 
@@ -29,12 +36,15 @@ public class MonitorOpenNebula implements VMMonitor {
 	int lastRAMRetrieve = -1;
 	int lastNETRetrieve = -1;
 	String IP = "";
+	int templateId = 0;
+	boolean locked=false;
 
 	// List<Data> netTxData;
 	// List<Data> netRxData;
 
-	public MonitorOpenNebula(VirtualMachine vm) {
+	public MonitorOpenNebula(VirtualMachine vm, TemplatePool tp, Client oneClient) {
 		this.vm = vm;
+		this.oneClient = oneClient;
 		if (vm != null)
 			this.vm.info();
 		cpuData = new ArrayList<MonitorData>();
@@ -43,7 +53,7 @@ public class MonitorOpenNebula implements VMMonitor {
 		// netTxData = new ArrayList<Data>();
 		// netRxData = new ArrayList<Data>();
 
-		// parse the IP
+		// parse the IP and the template id
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			
@@ -58,6 +68,12 @@ public class MonitorOpenNebula implements VMMonitor {
 			Element ip = nic.getChild("IP");
 			CDATA c = (CDATA) ip.getContent().get(1);
 			IP = c.getText();
+			
+			Element tempId = template.getChild("TEMPLATE_ID");
+			c = (CDATA) tempId.getContent().get(1);
+			templateId = Integer.parseInt(c.getText());
+			System.out.println(templateId);
+			this.vmTemplate = tp.getById(templateId);
 			in.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -98,6 +114,8 @@ public class MonitorOpenNebula implements VMMonitor {
 	}
 	
 	private void monitor() {
+		if(locked)
+			return;
 		SAXBuilder builder = new SAXBuilder();
 		try {
 			int lastCPU = -1;
@@ -249,5 +267,39 @@ public class MonitorOpenNebula implements VMMonitor {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public void migrate(int hostID) {
+		locked = true;
+		
+		System.out.println("Closing the previous VM");
+		vm.destroy();
+		OneResponse orp = vmTemplate.instantiate();
+		System.out.println("New VM has ID "+orp.getMessage());
+		vm = new VirtualMachine(Integer.parseInt(orp.getMessage()), oneClient);
+		vm.info();
+		System.out.println("Deploying");
+		vm.deploy(hostID);
+		
+		while(!vm.lcmStateStr().equals("RUNNING")) {
+			try {
+				vm.info();
+				//System.out.println("State: " + vm.lcmStateStr());
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Done Migrating");
+		locked = false;
+		
+		//System.out.println(orp.getMessage());
+	}
+
+	@Override
+	public boolean isLocked(){
+		return locked;
 	}
 }

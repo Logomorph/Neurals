@@ -1,4 +1,4 @@
-package aco_entities;
+package aco.entities;
 
 public class Pheromones {
 

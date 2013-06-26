@@ -8,14 +8,18 @@ import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import dclink_entities.HostData;
+import dclink_if.DCMonitor;
+
 import util.GraphCSVWriter;
 import util.InputReader;
 import aco.ACOAlgorithm;
-import aco_entities.Bin;
-import aco_entities.Item;
-import aco_entities.Resource;
+import aco.entities.Bin;
+import aco.entities.Item;
+import aco.entities.Resource;
 
 public class Base {
+	private DCMonitor dcMonitor = new DCMonitor();
 	private final static ACOAlgorithm aco = new ACOAlgorithm();
 	private Timer predictionTimer;
 	private Timer acoTimer;
@@ -42,10 +46,16 @@ public class Base {
 		LinkedList<Integer> numbers = (LinkedList<Integer>) InputReader
 				.readData();
 
-		ACOAlgorithm.NB_OF_BINS = numbers.get(0);
-		aco.setNB_OF_ITEMS(numbers.get(1));
-
+		// /////////////////
+		ACOAlgorithm.NB_OF_BINS = dcMonitor.getHosts().size();
 		int[] resourceCapacity = new int[Resource.values().length - 1];
+		List<Bin> bins = aco.getBins();
+		List<HostData> hosts = dcMonitor.getHosts();
+		for (int i = 0; i < ACOAlgorithm.NB_OF_BINS; i++) {
+			bins.get(i).setNaturalId(Integer.parseInt(hosts.get(i).getId()));
+		}
+		// ACOAlgorithm.NB_OF_BINS = numbers.get(0);
+
 		resourceCapacity[Resource.MIPS.getIndex()] = numbers.get(2);
 		resourceCapacity[Resource.CORES.getIndex()] = numbers.get(3);
 		resourceCapacity[Resource.RAM.getIndex()] = numbers.get(4);
@@ -53,6 +63,8 @@ public class Base {
 		resourceCapacity[Resource.BANDWIDTH.getIndex()] = numbers.get(6);
 
 		aco.initalizeBinsData(resourceCapacity);
+		// //////////
+		aco.setNB_OF_ITEMS(numbers.get(1));
 		List<Item> items = new ArrayList<Item>();
 		pboxes = new ArrayList<PredictionBox>();
 		Item i;
@@ -125,7 +137,7 @@ public class Base {
 		}
 		itemsQueue.add(items);
 
-		if (predEpoch == 5)
+		if (predEpoch == 50)
 			predictionTimer.cancel();
 		predEpoch++;
 		lock.unlock();
@@ -227,7 +239,7 @@ public class Base {
 			}
 			aco.setItems(items);
 		}
-		if (acoEpoch == 15)
+		if (acoEpoch == 150)
 			stop();
 		acoEpoch++;
 		lock.unlock();
@@ -270,7 +282,7 @@ public class Base {
 					}
 					row++;
 				}
-			} else { 
+			} else {
 				row++;
 			}
 		}

@@ -1,4 +1,4 @@
-package aco_entities;
+package aco.entities;
 
 public enum Resource {
 	MIPS(0), CORES(1), RAM(2), STORAGE(3), BANDWIDTH(4), RUN_TIME(5);

@@ -1,4 +1,4 @@
-package aco_entities;
+package aco.entities;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

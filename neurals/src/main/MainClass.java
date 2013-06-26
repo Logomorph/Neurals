@@ -2,8 +2,8 @@ package main;
 
 import java.io.IOException;
 
-import util.CSVWriter;
-import util.Util;
+import dclink_if.DCMonitor;
+
 import neuralnet.Layer;
 import neuralnet.Network;
 import nn_data.DataSet;
@@ -13,15 +13,18 @@ import nn_patterns.Exp;
 import nn_patterns.Line;
 import nn_patterns.SineWave;
 import nn_patterns.SlopedLine;
-import nn_transfer.Sigmoid;
 import nn_transfer.Sin;
+import util.CSVWriter;
+import util.Util;
 import base.Base;
 
 public class MainClass {
 	public static void main(String[] args) {
 		// RunACO();
 		//RunNNACO();
-		RunNN();
+		//RunNN();
+		DCMonitor dcm = new DCMonitor();
+		//dcm.getVMMonitor(384).migrate(1);
 	}
 
 	private static void RunNNACO() {
@@ -87,10 +90,11 @@ public class MainClass {
 		DataSet sine_wave = Util.createDataSet(sw_gen.generatePattern(100, 0),3,1);
 		DataSet exp = Util.createDataSet(exp_gen.generatePattern(100, 0), 3, 1);
 		DataSet sloped = Util.createDataSet(sloped_gen.generatePattern(100, 0), 3, 1);
+		DataSet sloped2 = Util.createDataSet(sloped_gen.generatePattern(100, 0), 3, 1);
 		
-		Layer in = new Layer(3, new Sigmoid(), false);
-		Layer hidden = new Layer(2, new Sigmoid(), false);
-		Layer out = new Layer(1, new Sigmoid(), false);
+		Layer in = new Layer(3, new Sin(), false);
+		Layer hidden = new Layer(2, new Sin(), false);
+		Layer out = new Layer(1, new Sin(), false);
 
 		in.connectLayers(hidden);
 		hidden.connectLayers(out);
@@ -106,11 +110,11 @@ public class MainClass {
 		System.out.println("Started training");
 		Learner l = new Learner(net, 0.8);
 
-		//for (int i = 0; i < 50; i++) {
-			//l.TrainNetwork(sine_wave,0.01d);
+		for (int i = 0; i < 50; i++) {
+			l.TrainNetwork(sine_wave,0.01d);
 			l.TrainNetwork(line,0.001d);
 			//l.TrainNetwork(exp,0.01d);
-		//}
+		}
 		System.out.println("Done training");
 
 		System.out.println("Started testing");
@@ -123,11 +127,21 @@ public class MainClass {
 			e.printStackTrace();
 		}
 		csvw.WriteDataSetOutput(sloped);
+		TestNetwork(net,sloped, csvw);
+		
+		csvw.WriteDataSetOutput(sloped2);
+		TestNetwork(net,sloped2, csvw);
+		
 		csvw.WriteDataSetOutput(sine_wave);
+		TestNetwork(net,sine_wave, csvw);
+		
 		csvw.WriteDataSetOutput(test_line);
+		TestNetwork(net,test_line, csvw);
+		
 		csvw.WriteDataSetOutput(exp);
+		TestNetwork(net,exp, csvw);
 
-		for (DataSetRow dsr : sloped.GetRows()) {
+		/*for (DataSetRow dsr : sloped.GetRows()) {
 			net.setInput(dsr.inputData);
 			net.Process();
 			csvw.WriteValue(net.getOutput()[0]);
@@ -152,7 +166,7 @@ public class MainClass {
 			net.setInput(dsr.inputData);
 			net.Process();
 			csvw.WriteValue(net.getOutput()[0]);
-		}
+		}*/
 
 		try {
 			csvw.CloseFile();
@@ -160,5 +174,17 @@ public class MainClass {
 			e.printStackTrace();
 		}
 		System.out.println("Done testing");
+		
+		Base b = new Base();
+		b.start();
+	}
+	
+	static void TestNetwork(Network net, DataSet ds, CSVWriter csvw) {
+		for (DataSetRow dsr : ds.GetRows()) {
+			net.setInput(dsr.inputData);
+			net.Process();
+			csvw.WriteValue(net.getOutput()[0]);
+		}
+		csvw.WriteNewLine();
 	}
 }
