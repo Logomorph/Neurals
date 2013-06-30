@@ -13,6 +13,7 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.opennebula.client.Client;
 import org.opennebula.client.OneResponse;
+import org.opennebula.client.image.ImagePool;
 import org.opennebula.client.template.Template;
 import org.opennebula.client.template.TemplatePool;
 import org.opennebula.client.vm.VirtualMachine;
@@ -20,13 +21,14 @@ import org.opennebula.client.vm.VirtualMachine;
 import dclink_entities.MonitorData;
 import dclink_if.VMMonitor;
 
-
 public class MonitorOpenNebula implements VMMonitor {
 	VirtualMachine vm;
 	Template vmTemplate;
 	Client oneClient;
 	int MONITOR_INTERVAl = 10 * 1000;
 	Timer monitorTimer;
+	int ram, cpu;
+	int hostId=0;
 
 	List<MonitorData> cpuData;
 	List<MonitorData> ramData;
@@ -37,12 +39,15 @@ public class MonitorOpenNebula implements VMMonitor {
 	int lastNETRetrieve = -1;
 	String IP = "";
 	int templateId = 0;
-	boolean locked=false;
+	boolean locked = false;
+	ImagePool imagePool;
 
 	// List<Data> netTxData;
 	// List<Data> netRxData;
 
-	public MonitorOpenNebula(VirtualMachine vm, TemplatePool tp, Client oneClient) {
+	public MonitorOpenNebula(VirtualMachine vm, TemplatePool tp, ImagePool imagePool,
+			Client oneClient) {
+		this.imagePool = imagePool;
 		this.vm = vm;
 		this.oneClient = oneClient;
 		if (vm != null)
@@ -53,25 +58,53 @@ public class MonitorOpenNebula implements VMMonitor {
 		// netTxData = new ArrayList<Data>();
 		// netRxData = new ArrayList<Data>();
 
+		// get host id
+		try {
+			SAXBuilder builder = new SAXBuilder();
+
+			// Should be parsed out of info, but the parsing fails, for some
+			// reason
+			Reader in = new StringReader(vm.info().getMessage());
+			Document doc = builder.build(in);
+			Element root = doc.getRootElement();
+			Element history = root.getChild("HISTORY_RECORDS");
+			Element hist = history.getChild("HISTORY");
+			Element HID = hist.getChild("HID");
+			hostId = Integer.parseInt(HID.getValue());
+			System.out.println(hostId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		// parse the IP and the template id
 		try {
 			SAXBuilder builder = new SAXBuilder();
-			
+
 			// Should be parsed out of info, but the parsing fails, for some
 			// reason
 			Reader in = new StringReader(vm.monitoring().getMessage());
 			Document doc = builder.build(in);
 			Element root = doc.getRootElement();
 			Element vme = root.getChild("VM");
+
+			Element memory = vme.getChild("MEMORY");
+			ram = Integer.parseInt(memory.getValue());
+			System.out.println(ram);
+
 			Element template = vme.getChild("TEMPLATE");
 			Element nic = template.getChild("NIC");
 			Element ip = nic.getChild("IP");
 			CDATA c = (CDATA) ip.getContent().get(1);
 			IP = c.getText();
-			
+
 			Element tempId = template.getChild("TEMPLATE_ID");
 			c = (CDATA) tempId.getContent().get(1);
 			templateId = Integer.parseInt(c.getText());
+
+			Element cpus = template.getChild("CPU");
+			c = (CDATA) cpus.getContent().get(1);
+			cpu = Integer.parseInt(c.getText());
+			System.out.println(cpu);
 			System.out.println(templateId);
 			this.vmTemplate = tp.getById(templateId);
 			in.close();
@@ -112,9 +145,9 @@ public class MonitorOpenNebula implements VMMonitor {
 		netUsageData.clear();
 		netUsageData.add(new MonitorData(0, 0));
 	}
-	
+
 	private void monitor() {
-		if(locked)
+		if (locked)
 			return;
 		SAXBuilder builder = new SAXBuilder();
 		try {
@@ -157,9 +190,11 @@ public class MonitorOpenNebula implements VMMonitor {
 						// netRxData.add(new Data(net_rx_val,lp));
 
 						int total_net = net_tx_val + net_rx_val;
-						
-						MonitorData old = netUsageData.get(netUsageData.size()-1);
-						int data = (total_net - old.data) / (lp - old.timestamp);
+
+						MonitorData old = netUsageData
+								.get(netUsageData.size() - 1);
+						int data = (total_net - old.data)
+								/ (lp - old.timestamp);
 						netUsageData.add(new MonitorData(data, lp));
 						System.out.println("added value");
 					}
@@ -193,9 +228,11 @@ public class MonitorOpenNebula implements VMMonitor {
 						// netRxData.add(new Data(net_rx_val,lp));
 
 						int total_net = net_tx_val + net_rx_val;
-						
-						MonitorData old = netUsageData.get(netUsageData.size()-1);
-						int data = (total_net - old.data) / (lp - old.timestamp);
+
+						MonitorData old = netUsageData
+								.get(netUsageData.size() - 1);
+						int data = (total_net - old.data)
+								/ (lp - old.timestamp);
 						netUsageData.add(new MonitorData(data, lp));
 						System.out.println("added value");
 					}
@@ -272,20 +309,20 @@ public class MonitorOpenNebula implements VMMonitor {
 	@Override
 	public void migrate(int hostID) {
 		locked = true;
-		
+
 		System.out.println("Closing the previous VM");
 		vm.destroy();
 		OneResponse orp = vmTemplate.instantiate();
-		System.out.println("New VM has ID "+orp.getMessage());
+		System.out.println("New VM has ID " + orp.getMessage());
 		vm = new VirtualMachine(Integer.parseInt(orp.getMessage()), oneClient);
 		vm.info();
 		System.out.println("Deploying");
 		vm.deploy(hostID);
-		
-		while(!vm.lcmStateStr().equals("RUNNING")) {
+
+		while (!vm.lcmStateStr().equals("RUNNING")) {
 			try {
 				vm.info();
-				//System.out.println("State: " + vm.lcmStateStr());
+				// System.out.println("State: " + vm.lcmStateStr());
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -294,12 +331,28 @@ public class MonitorOpenNebula implements VMMonitor {
 		}
 		System.out.println("Done Migrating");
 		locked = false;
-		
-		//System.out.println(orp.getMessage());
+
+		// System.out.println(orp.getMessage());
 	}
 
 	@Override
-	public boolean isLocked(){
+	public boolean isLocked() {
 		return locked;
+	}
+
+	@Override
+	public int getRam() {
+		return this.ram;
+	}
+
+	@Override
+	public int getCpu() {
+		return this.cpu;
+	}
+
+	@Override
+	public int getHost() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

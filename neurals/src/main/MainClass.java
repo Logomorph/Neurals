@@ -2,8 +2,6 @@ package main;
 
 import java.io.IOException;
 
-import dclink_if.DCMonitor;
-
 import neuralnet.Layer;
 import neuralnet.Network;
 import nn_data.DataSet;
@@ -17,14 +15,15 @@ import nn_transfer.Sin;
 import util.CSVWriter;
 import util.Util;
 import base.Base;
+import dclink_if.DCMonitor;
 
 public class MainClass {
 	public static void main(String[] args) {
 		// RunACO();
-		//RunNNACO();
+		RunNNACO();
 		//RunNN();
-		DCMonitor dcm = new DCMonitor();
-		//dcm.getVMMonitor(384).migrate(1);
+		//DCMonitor dcm = new DCMonitor();
+		//dcm.getVMMonitor(399);
 	}
 
 	private static void RunNNACO() {

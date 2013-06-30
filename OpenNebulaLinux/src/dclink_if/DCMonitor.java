@@ -7,6 +7,7 @@ import java.util.List;
 import org.opennebula.client.Client;
 import org.opennebula.client.host.Host;
 import org.opennebula.client.host.HostPool;
+import org.opennebula.client.image.ImagePool;
 import org.opennebula.client.template.TemplatePool;
 import org.opennebula.client.vm.VirtualMachine;
 import org.opennebula.client.vm.VirtualMachinePool;
@@ -20,6 +21,7 @@ public class DCMonitor {
 	private TemplatePool tempPool;
 	private List<HostData> hosts = new ArrayList<HostData>();
 	private HostPool hostPool;
+	private ImagePool imagePool;
 
 	public DCMonitor() {
 		try {
@@ -29,6 +31,11 @@ public class DCMonitor {
 			tempPool.info();
 			hostPool = new HostPool(oneClient);
 			hostPool.info();
+			
+			imagePool = new ImagePool(oneClient);
+			imagePool.info();
+			System.out.println(imagePool.getById(65).info().getMessage());
+			
 			XMLParser parser = new XMLParser();
 			setHosts(parser.readXML("host.txt"));
 		} catch (Exception e) {
@@ -39,7 +46,7 @@ public class DCMonitor {
 	public VMMonitor getVMMonitor(int id) {
 		VirtualMachine vm = new VirtualMachine(id, oneClient);
 		vm.info();
-		return new MonitorOpenNebula(vm,tempPool,oneClient);
+		return new MonitorOpenNebula(vm,tempPool,imagePool, oneClient);
 	}
 	
 	public List<Integer> getVMs() {

@@ -28,8 +28,7 @@ public class ACOAlgorithm {
 	public static final int NB_OF_ANTS = 4;
 
 	public static int NB_OF_BINS;
-	public static int NB_OF_ITEMS;
-	// private int NB_OF_ITEMS;
+	private int nbOfItems;
 
 	private static double THRESHOLD = 0.3d;
 
@@ -40,7 +39,7 @@ public class ACOAlgorithm {
 
 	private List<Bin> bins = new ArrayList<Bin>(NB_OF_BINS);
 	private List<Bin> adjustedBins = new ArrayList<Bin>(NB_OF_BINS);
-	private List<Item> items = new ArrayList<Item>(NB_OF_ITEMS);
+	private List<Item> items = new ArrayList<Item>(nbOfItems);
 
 	private int[][] bestCycleSolution;
 	private int[][] globalBestSolution;
@@ -97,12 +96,12 @@ public class ACOAlgorithm {
 	}
 
 	public void init() {
-		pheromones = Initializer.initializePheromones(NB_OF_ITEMS, NB_OF_BINS,
+		pheromones = Initializer.initializePheromones(nbOfItems, NB_OF_BINS,
 				INITIAL_PHEROMONES);
 		bestCycleSolution = Initializer.initializeIndividualAntMatrix(
-				NB_OF_ITEMS, NB_OF_BINS);
-		probabilities = Initializer.initializeMatrices(NB_OF_ITEMS, NB_OF_BINS);
-		deltaTauBest = Initializer.initializeDeltaTau(NB_OF_ITEMS, NB_OF_BINS,
+				nbOfItems, NB_OF_BINS);
+		probabilities = Initializer.initializeMatrices(nbOfItems, NB_OF_BINS);
+		deltaTauBest = Initializer.initializeDeltaTau(nbOfItems, NB_OF_BINS,
 				INITIAL_PHEROMONES);
 		niu = initializeNiu();
 		availableResources = Initializer.initializeAvailableResources(
@@ -113,6 +112,8 @@ public class ACOAlgorithm {
 		int index;
 		if (leftoverItems != null)
 			for (Item item : leftoverItems) {
+				// if (!itemsToMigrate.contains(item)) {
+				// System.out.println("Don't migrate item!");
 				index = item.getDeploymentBin().getId();
 				x[items.indexOf(item)][index] = 1;
 				bins.get(index).setBinLoadVector(computeBinLoadVector(index));
@@ -121,7 +122,7 @@ public class ACOAlgorithm {
 	}
 
 	public void run() {
-//		System.out.println("aco runs");
+		System.out.println("aco runs");
 		int q;
 		int a;
 		int v;
@@ -134,11 +135,14 @@ public class ACOAlgorithm {
 			for (Item item : leftoverItems) {
 				System.out.println("leftover item " + items.indexOf(item)
 						+ " : "
-						+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+						+ item.getResourceDemand()[Resource.CPU.getIndex()] + ", "
+						+ item.getResourceDemand()[Resource.RAM.getIndex()] + ", "
+					    + item.getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
+					    + item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
+					    + item.getResourceDemand()[Resource.RUN_TIME.getIndex()]);
 			}
 		for (q = 0; q < NB_OF_CYCLES; q++) {
-			// index = -1;
-			x = Initializer.initializeIndividualAntMatrix(NB_OF_ITEMS,
+			x = Initializer.initializeIndividualAntMatrix(nbOfItems,
 					NB_OF_BINS);
 			for (Bin bin : bins) {
 				for (int k = 0; k < bin.getBinLoadVector().length; k++)
@@ -152,11 +156,39 @@ public class ACOAlgorithm {
 				copyOfItemSet.clear();
 				for (Item item : items) {
 					copyOfItemSet.add(item);
+//					System.out.println("items: " + items.indexOf(item)
+//					+ " : "
+//					+ item.getResourceDemand()[Resource.CPU.getIndex()] + ", "
+//					+ item.getResourceDemand()[Resource.RAM.getIndex()] + ", "
+//				    + item.getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
+//				    + item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
+//				    + item.getResourceDemand()[Resource.RUN_TIME.getIndex()]);
+		
 				}
 				v = 0;
+				
 				while (copyOfItemSet.size() > 0 && v < NB_OF_BINS) {
+//					for (Item item : copyOfItemSet) {
+//						System.out.println("copy itemset: " + items.indexOf(item)
+//								+ " : "
+//								+ item.getResourceDemand()[Resource.CPU.getIndex()] + ", "
+//								+ item.getResourceDemand()[Resource.RAM.getIndex()] + ", "
+//							    + item.getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
+//							    + item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
+//							    + item.getResourceDemand()[Resource.RUN_TIME.getIndex()]);
+//					}
+					
 					setOfQualifiedItems = determineSetOfQualifiedItems(v,
 							copyOfItemSet);
+//					for (Item item : setOfQualifiedItems) {
+//						System.out.println("qualified: " + items.indexOf(item)
+//								+ " : "
+//								+ item.getResourceDemand()[Resource.CPU.getIndex()] + ", "
+//								+ item.getResourceDemand()[Resource.RAM.getIndex()] + ", "
+//							    + item.getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
+//							    + item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
+//							    + item.getResourceDemand()[Resource.RUN_TIME.getIndex()]);
+//					}
 					if (setOfQualifiedItems.size() > 0) {
 						double sum = 0.0;
 						for (Item item : setOfQualifiedItems) {
@@ -171,13 +203,13 @@ public class ACOAlgorithm {
 							bins.get(v).turnON();
 						}
 						x[i][v] = 1;
-						// System.out.println("item " + i + " with size: "
-						// + items.get(i).getValueSet()[0] + ", "
-						// + items.get(i).getValueSet()[1] + ", "
-						// + items.get(i).getValueSet()[2] + ", "
-						// + items.get(i).getValueSet()[3] + ", "
-						// + items.get(i).getValueSet()[4] + " in bin "
-						// + v);
+//						 System.out.println("item " + i + " with size: "
+//						 + items.get(i).getResourceDemand()[Resource.CPU.getIndex()] + ", "
+//						 + items.get(i).getResourceDemand()[Resource.RAM.getIndex()] + ", "
+//						 + items.get(i).getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
+//						 + items.get(i).getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
+//						 + items.get(i).getResourceDemand()[Resource.RUN_TIME.getIndex()] + " in bin "
+//						 + v);
 						x[items.size()][v] = 1;
 						niu[i][v] = adjustNiu(i, v);
 						copyOfItemSet.remove(items.get(i));
@@ -272,7 +304,7 @@ public class ACOAlgorithm {
 					System.out.println("Overflowed item "
 							+ i
 							+ " added to queue: "
-							+ items.get(i).getResourceDemand()[Resource.MIPS
+							+ items.get(i).getResourceDemand()[Resource.CPU
 									.getIndex()]);
 				}
 				out.write("\n");
@@ -282,24 +314,22 @@ public class ACOAlgorithm {
 		} catch (Exception e) {// Catch exception if any
 			System.err.println("Error: " + e.getMessage());
 		}
-		// for(Item item : Base.overflowItems) {
-		// System.out.println("Remaining overflowed items: " +
-		// item.getResourceDemand()[Resource.MIPS.getIndex()]);
-		// }
+//		for (Item item : Base.overflowItems) {
+//			System.out.println("Remaining overflowed items: "
+//					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+//		}
 	}
 
 	private void determineAvailableResources() {
 		availableResources = new int[Resource.values().length - 1];
 		for (Bin bin : bins) {
-			availableResources[Resource.MIPS.getIndex()] += (bin
-					.getResourceCapacity()[Resource.MIPS.getIndex()] - bin
-					.getBinLoadVector()[Resource.MIPS.getIndex()]);
-			availableResources[Resource.CORES.getIndex()] += (bin
-					.getResourceCapacity()[Resource.CORES.getIndex()] - bin
-					.getBinLoadVector()[Resource.CORES.getIndex()]);
-			availableResources[Resource.BANDWIDTH.getIndex()] += (bin
-					.getResourceCapacity()[Resource.BANDWIDTH.getIndex()] - bin
-					.getBinLoadVector()[Resource.BANDWIDTH.getIndex()]);
+			availableResources[Resource.CPU.getIndex()] += (bin
+					.getResourceCapacity()[Resource.CPU.getIndex()] - bin
+					.getBinLoadVector()[Resource.CPU.getIndex()]);
+			availableResources[Resource.NETWORK_TRANSFER_SPEED.getIndex()] += (bin
+					.getResourceCapacity()[Resource.NETWORK_TRANSFER_SPEED
+					.getIndex()] - bin.getBinLoadVector()[Resource.NETWORK_TRANSFER_SPEED
+					.getIndex()]);
 			availableResources[Resource.RAM.getIndex()] += (bin
 					.getResourceCapacity()[Resource.RAM.getIndex()] - bin
 					.getBinLoadVector()[Resource.RAM.getIndex()]);
@@ -415,7 +445,7 @@ public class ACOAlgorithm {
 		int[] vector = new int[l];
 		int[] demandVector = new int[l];
 
-		for (int i = 0; i < NB_OF_ITEMS; i++) {
+		for (int i = 0; i < nbOfItems; i++) {
 			if (x[i][binIndex] == 1) {
 				demandVector = items.get(i).getValueSet();
 				for (int j = 0; j < l; j++) {
@@ -518,16 +548,16 @@ public class ACOAlgorithm {
 	/**
 	 * @return the nB_OF_ITEMS
 	 */
-	public int getNB_OF_ITEMS() {
-		return NB_OF_ITEMS;
+	public int getNbOfItems() {
+		return nbOfItems;
 	}
 
 	/**
 	 * @param nB_OF_ITEMS
 	 *            the nB_OF_ITEMS to set
 	 */
-	public void setNB_OF_ITEMS(int nB_OF_ITEMS) {
-		NB_OF_ITEMS = nB_OF_ITEMS;
+	public void setNbOfItems(int nbOfItems) {
+		this.nbOfItems = nbOfItems;
 	}
 
 	/**
@@ -561,7 +591,8 @@ public class ACOAlgorithm {
 	}
 
 	/**
-	 * @param adjustedBins the adjustedBins to set
+	 * @param adjustedBins
+	 *            the adjustedBins to set
 	 */
 	public void setAdjustedBins(List<Bin> adjustedBins) {
 		this.adjustedBins = adjustedBins;

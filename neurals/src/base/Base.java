@@ -3,13 +3,11 @@ package base;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import dclink_entities.HostData;
-import dclink_if.DCMonitor;
 
 import util.GraphCSVWriter;
 import util.InputReader;
@@ -17,6 +15,9 @@ import aco.ACOAlgorithm;
 import aco.entities.Bin;
 import aco.entities.Item;
 import aco.entities.Resource;
+import dclink_entities.HostData;
+import dclink_if.DCMonitor;
+import dclink_if.VMMonitor;
 
 public class Base {
 	private DCMonitor dcMonitor = new DCMonitor();
@@ -49,41 +50,62 @@ public class Base {
 		// /////////////////
 		ACOAlgorithm.NB_OF_BINS = dcMonitor.getHosts().size();
 		int[] resourceCapacity = new int[Resource.values().length - 1];
-		List<Bin> bins = aco.getBins();
 		List<HostData> hosts = dcMonitor.getHosts();
+		// ACOAlgorithm.NB_OF_BINS = numbers.get(0);
+
+		resourceCapacity[Resource.CPU.getIndex()] = hosts.get(0).getMaxCPU();
+		resourceCapacity[Resource.RAM.getIndex()] = (int) Math.ceil(hosts.get(0).getMaxMemory()/1024);
+		resourceCapacity[Resource.STORAGE.getIndex()] = 250; // 250gb
+		resourceCapacity[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = numbers
+				.get(5); // 100 mb/s
+
+		aco.initalizeBinsData(resourceCapacity);
+
+		List<Bin> bins = aco.getBins();
+
 		for (int i = 0; i < ACOAlgorithm.NB_OF_BINS; i++) {
 			bins.get(i).setNaturalId(Integer.parseInt(hosts.get(i).getId()));
 		}
-		// ACOAlgorithm.NB_OF_BINS = numbers.get(0);
-
-		resourceCapacity[Resource.MIPS.getIndex()] = numbers.get(2);
-		resourceCapacity[Resource.CORES.getIndex()] = numbers.get(3);
-		resourceCapacity[Resource.RAM.getIndex()] = numbers.get(4);
-		resourceCapacity[Resource.STORAGE.getIndex()] = numbers.get(5);
-		resourceCapacity[Resource.BANDWIDTH.getIndex()] = numbers.get(6);
-
-		aco.initalizeBinsData(resourceCapacity);
+		for (Bin bin : bins) {
+			System.out.println("Bin "
+					+ bin.getNaturalId()
+					+ " : "
+					+ bin.getResourceCapacity()[Resource.CPU.getIndex()]
+					+ ","
+					+ bin.getResourceCapacity()[Resource.RAM.getIndex()]
+					+ ","
+					+ bin.getResourceCapacity()[Resource.STORAGE.getIndex()]
+					+ ","
+					+ bin.getResourceCapacity()[Resource.NETWORK_TRANSFER_SPEED
+							.getIndex()] + ",");
+		}
 		// //////////
-		aco.setNB_OF_ITEMS(numbers.get(1));
+		aco.setNbOfItems(numbers.get(1));
 		List<Item> items = new ArrayList<Item>();
 		pboxes = new ArrayList<PredictionBox>();
 		Item i;
 
-		for (int s = 7; s < numbers.size(); s += 6) {
+		List<Integer> vms = dcMonitor.getVMs();
+		for (int s = 0; s < vms.size(); s++) {
+			VMMonitor vm = dcMonitor.getVMMonitor(vms.get(s));
 			int[] resourceDemand = new int[Resource.values().length];
-			resourceDemand[Resource.MIPS.getIndex()] = numbers.get(s);
-			resourceDemand[Resource.CORES.getIndex()] = numbers.get(s + 1);
-			resourceDemand[Resource.RAM.getIndex()] = numbers.get(s + 2);
-			resourceDemand[Resource.STORAGE.getIndex()] = numbers.get(s + 3);
-			resourceDemand[Resource.BANDWIDTH.getIndex()] = numbers.get(s + 4);
-			resourceDemand[Resource.RUN_TIME.getIndex()] = numbers.get(s + 5);
+			resourceDemand[Resource.CPU.getIndex()] = vm.getCpu();// numbers.get(s);
+			resourceDemand[Resource.RAM.getIndex()] = (int) Math.ceil(vm.getRam()/1024);// numbers.get(s
+																	// + 1);
+			resourceDemand[Resource.STORAGE.getIndex()] = 1;// numbers.get(s
+																// + 2);
+			resourceDemand[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = 10; // numbers.get(s
+																				// +
+																				// 3);
+			resourceDemand[Resource.RUN_TIME.getIndex()] = 1000 + (int) (Math
+					.random() * 2000);// numbers.get(s + 4);
 
 			i = new Item();
 			i.setResourceDemand(resourceDemand);
 			items.add(i);
 
 			PredictionBox pboxBuff = new PredictionBox(i, resourceCapacity,
-					graphCSV);
+					graphCSV, vm);
 			pboxes.add(pboxBuff);
 		}
 
@@ -137,7 +159,7 @@ public class Base {
 		}
 		itemsQueue.add(items);
 
-		if (predEpoch == 50)
+		if (predEpoch == 5)
 			predictionTimer.cancel();
 		predEpoch++;
 		lock.unlock();
@@ -172,23 +194,35 @@ public class Base {
 			}
 		}
 		for (Item item : aco.getItems()) {
-			System.out.println("ACO items: "
-					+ item.getResourceDemand()[Resource.MIPS.getIndex()]);
+			System.out.println("ACO item "
+					+ aco.getItems().indexOf(item)
+					+ " resource demands: "
+					+ item.getResourceDemand()[Resource.CPU.getIndex()]
+					+ ", "
+					+ item.getResourceDemand()[Resource.RAM.getIndex()]
+					+ ", "
+					+ item.getResourceDemand()[Resource.STORAGE.getIndex()]
+					+ ", "
+					+ item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED
+							.getIndex()] + ", "
+					+ item.getResourceDemand()[Resource.RUN_TIME.getIndex()]
+					+ ", ");
 		}
-		aco.setNB_OF_ITEMS(aco.getItems().size());
-		//
-		// System.out.println("NB ITEMS " + aco.getNB_OF_ITEMS());
-
-		aco.init();
-		aco.run();
+		aco.setNbOfItems(aco.getItems().size());
 		boolean flag = true;
-		for (Item item : itemsToMigrate) {
-			if (overflowItems.contains(item)) {
-				System.out.println("Redo placement");
-				flag = false;
-				break;
+
+//		if (aco.getNbOfItems() > 0) {
+			aco.init();
+			aco.run();
+
+			for (Item item : itemsToMigrate) {
+				if (overflowItems.contains(item)) {
+					System.out.println("Redo placement");
+					flag = false;
+					break;
+				}
 			}
-		}
+//		}
 		if (flag) {
 			items = aco.getItems();
 			int binIdBeforeMigrate, binIdAfterMigrate;
@@ -198,13 +232,13 @@ public class Base {
 
 				int[][] globalBestSolution = aco.getGlobalBestSolution();
 				List<Bin> bins = aco.getBins();
-				for (int row = 0; row < aco.getNB_OF_ITEMS(); row++) {
+				for (int row = 0; row < aco.getNbOfItems(); row++) {
 					for (int col = 0; col < ACOAlgorithm.NB_OF_BINS; col++) {
 
 						if (globalBestSolution[row][col] != 0) {
 							// deploy VM in corresponding Machine
-							System.out
-									.println("Item " + row + " in bin " + col);
+							System.out.println("Item " + row
+									+ " assigned to bin " + col);
 							items.get(row).setDeploymentBin(bins.get(col));
 							if (items.get(row).getEndRunTime() == null
 									|| (items.get(row).getEndRunTime() != null && !items
@@ -239,7 +273,8 @@ public class Base {
 			}
 			aco.setItems(items);
 		}
-		if (acoEpoch == 150)
+
+		if (acoEpoch == 15)
 			stop();
 		acoEpoch++;
 		lock.unlock();
@@ -258,27 +293,27 @@ public class Base {
 				if (!items.get(row).getEndRunTime().isRunning()) {
 					System.out
 							.println("Remove item "
-									+ items.get(row).getResourceDemand()[Resource.MIPS
-											.getIndex()]
+									// +
+									// items.get(row).getResourceDemand()[Resource.CPU
+									// .getIndex()]
+									+ row
 									+ " after "
 									+ items.get(row).getResourceDemand()[Resource.RUN_TIME
 											.getIndex()]);
 					items.remove(row);
+					// delete VM from pool
 					if (row == (items.size() + 1))
 						row--;
 				} else {
 					leftoverItems.add(items.get(row));
 					if (items.get(row).getDeploymentBin().isMigrateTrigger() == true) {
 						itemsToMigrate.add(items.get(row));
-						System.out
-								.println("Item "
-										+ row
-										+ " in bin "
-										+ items.get(row).getDeploymentBin()
-												.getId()
-										+ " set to migrate with "
-										+ items.get(row).getResourceDemand()[Resource.MIPS
-												.getIndex()]);
+						System.out.println("Item " + row + " in bin "
+								+ items.get(row).getDeploymentBin().getId()
+								+ " set to migrate");
+						// + " set to migrate with "
+						// + items.get(row).getResourceDemand()[Resource.CPU
+						// .getIndex()]);
 					}
 					row++;
 				}

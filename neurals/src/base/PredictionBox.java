@@ -10,6 +10,7 @@ import nn_transfer.Sin;
 import util.GraphCSVWriter;
 import aco.entities.Item;
 import aco.entities.Resource;
+import dclink_if.VMMonitor;
 
 /*
  * Contains all the neural networks needed for predicting data for one VM
@@ -30,18 +31,20 @@ public class PredictionBox {
 	boolean hasData;
 
 	// stuff for prediction
-	Network mipsNet, coresNet, ramNet, storeNet, bwNet, runTimeNet;
+	Network mipsNet, ramNet, storeNet, bwNet, runTimeNet;
 
 	GraphCSVWriter graphCSV;
+	VMMonitor vmm;
 
 	public PredictionBox(Item item, int[] resourceCapacity,
-			GraphCSVWriter graphCSV) {
+			GraphCSVWriter graphCSV, VMMonitor vmm) {
 		this.vm = item;
 		this.resourceCapacity = resourceCapacity;
 		populateData();
 		createNeuralNets();
 		hasData = true;
 		this.graphCSV = graphCSV;
+		this.vmm = vmm;
 	}
 
 	// Update all the neural networks and the Item
@@ -54,15 +57,7 @@ public class PredictionBox {
 		mipsNet.setInput(inMips);
 		mipsNet.Process();
 
-		resourceDemand[Resource.MIPS.getIndex()] = (int) (mipsNet.getOutput()[0] * Item.MIPS_MAX);
-
-		// CORES NN
-		double[] inCores = { CORES_data[index - 2], CORES_data[index - 1],
-				CORES_data[index] };
-		coresNet.setInput(inCores);
-		coresNet.Process();
-
-		resourceDemand[Resource.CORES.getIndex()] = (int) (coresNet.getOutput()[0] * Item.CORES_MAX);
+		resourceDemand[Resource.CPU.getIndex()] = (int) (mipsNet.getOutput()[0] * Item.CPU_MAX);
 
 		// RAM NN
 		double[] inRam = { RAM_data[index - 2], RAM_data[index - 1],
@@ -87,7 +82,7 @@ public class PredictionBox {
 		bwNet.setInput(inBw);
 		bwNet.Process();
 
-		resourceDemand[Resource.BANDWIDTH.getIndex()] = (int) (bwNet
+		resourceDemand[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = (int) (bwNet
 				.getOutput()[0] * Item.BANDWIDTH_MAX);
 
 		// RUN_TIME NN
@@ -103,11 +98,10 @@ public class PredictionBox {
 
 		if (graphCSV != null) {
 			graphCSV.addLine(vm.getIdentifier(),
-					resourceDemand[Resource.MIPS.getIndex()],
+					resourceDemand[Resource.CPU.getIndex()],
 					resourceDemand[Resource.RAM.getIndex()],
-					resourceDemand[Resource.CORES.getIndex()],
 					resourceDemand[Resource.STORAGE.getIndex()],
-					resourceDemand[Resource.BANDWIDTH.getIndex()],
+					resourceDemand[Resource.NETWORK_TRANSFER_SPEED.getIndex()],
 					resourceDemand[Resource.RUN_TIME.getIndex()]);
 		}
 
@@ -141,7 +135,6 @@ public class PredictionBox {
 
 	private void createNeuralNets() {
 		mipsNet = createAndTrainNetwork(MIPS_data);
-		coresNet = createAndTrainNetwork(CORES_data);
 		ramNet = createAndTrainNetwork(RAM_data);
 		storeNet = createAndTrainNetwork(STORAGE_data);
 		bwNet = createAndTrainNetwork(BANDWIDTH_data);

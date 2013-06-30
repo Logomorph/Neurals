@@ -10,6 +10,10 @@ public interface VMMonitor {
 	
 	public boolean isLocked();
 	
+	public int getRam();
+	public int getCpu();
+	public int getHost();
+	
 	public List<MonitorData> getCPUData();
 	public List<MonitorData> getRAMData();
 	public List<MonitorData> getNETData();

@@ -35,7 +35,7 @@ public class Bin {
 	}
 
 	public int[] getValueSet() {
-		int[] demandVector = new int[5];
+		int[] demandVector = new int[Resource.values().length - 1];
 		for (int r = 0 ; r < Resource.values().length - 1; r++) {
 			demandVector[r] = resourceCapacity[r];
 		}

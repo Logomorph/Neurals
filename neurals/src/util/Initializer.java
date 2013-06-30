@@ -7,13 +7,10 @@ public class Initializer {
 
 	public static int[] initializeAvailableResources(Bin bin, int numberOfBins) {
 		int[] availableResources = new int[Resource.values().length - 1];
-		availableResources[Resource.MIPS.getIndex()] = bin
-				.getResourceCapacity()[Resource.MIPS.getIndex()] * numberOfBins;
-		availableResources[Resource.CORES.getIndex()] = bin
-				.getResourceCapacity()[Resource.CORES.getIndex()]
-				* numberOfBins;
-		availableResources[Resource.BANDWIDTH.getIndex()] = bin
-				.getResourceCapacity()[Resource.BANDWIDTH.getIndex()]
+		availableResources[Resource.CPU.getIndex()] = bin
+				.getResourceCapacity()[Resource.CPU.getIndex()] * numberOfBins;
+		availableResources[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = bin
+				.getResourceCapacity()[Resource.NETWORK_TRANSFER_SPEED.getIndex()]
 				* numberOfBins;
 		availableResources[Resource.RAM.getIndex()] = bin.getResourceCapacity()[Resource.RAM
 				.getIndex()] * numberOfBins;
@@ -65,7 +62,7 @@ public class Initializer {
 
 	public static double[][] initializeMatrices(int nbOfItems, int nbOfBins) {
 		double[][] temp = new double[nbOfItems + 1][nbOfBins];
-		for (int i = 0; i < nbOfItems; i++) {
+		for (int i = 0; i <= nbOfItems; i++) {
 			for (int j = 0; j < nbOfBins; j++) {
 				temp[i][j] = 0.0;
 			}

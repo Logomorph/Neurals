@@ -12,11 +12,10 @@ public class Item {
 	private boolean toMigrate;
 	private int[] resourceDemand;
 
-	public static final int MIPS_MAX = 4000;
-	public static final int CORES_MAX = 10;
-	public static final int RAM_MAX = 15;
-	public static final int STORAGE_MAX = 500;
-	public static final int BANDWIDTH_MAX = 4;
+	public static final int CPU_MAX = 400;
+	public static final int RAM_MAX = 5000;
+	public static final int STORAGE_MAX = 50;
+	public static final int BANDWIDTH_MAX = 10;
 	public static final int RUN_TIME_MAX = 10000;
 
 	private Timer endRunTime;
@@ -49,7 +48,7 @@ public class Item {
 	}
 
 	public int[] getValueSet() {
-		int[] demandVector = new int[5];
+		int[] demandVector = new int[Resource.values().length - 1];
 		for (int r = 0; r < Resource.values().length - 1; r++) {
 			demandVector[r] = resourceDemand[r];
 		}

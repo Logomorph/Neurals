@@ -1,7 +1,7 @@
 package aco.entities;
 
 public enum Resource {
-	MIPS(0), CORES(1), RAM(2), STORAGE(3), BANDWIDTH(4), RUN_TIME(5);
+	CPU(0), RAM(1), STORAGE(2), NETWORK_TRANSFER_SPEED(3), RUN_TIME(4);
 
 	private int index;
 
