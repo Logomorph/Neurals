@@ -53,12 +53,12 @@ public class Network implements Serializable {
 		return output;
 	}
 	
-	public void Process() {
+	public void process() {
 		//System.out.println("[Network] Started processing");
 		
 		for(int i=0;i<layers.size();i++) {
 			//System.out.println("[Network] Updating Layer "+i);
-			layers.get(i).Process();
+			layers.get(i).process();
 		}
 		
 		output = new double[outputNeurons.size()];
@@ -66,5 +66,10 @@ public class Network implements Serializable {
 			output[i] = outputNeurons.get(i).getOutput();
 		
 		//System.out.println("[Network] Done processing");
+	}
+	public void randomizeWeights() {
+		for(Layer l : layers) {
+			l.randomizeWeights();
+		}
 	}
 }

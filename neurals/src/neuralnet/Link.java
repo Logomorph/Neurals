@@ -18,7 +18,7 @@ public class Link implements Serializable {
 	 *  Return input through the link
 	 * @return input through the link
 	 */
-	public double GetInput() {
+	public double getInput() {
 		return this.start.getOutput();
 	}
 	
@@ -26,7 +26,7 @@ public class Link implements Serializable {
 	 *  Return weighted input through the link
 	 * @return weighted input through the link
 	 */
-	public double GetWeightedInput() {
+	public double getWeightedInput() {
 		//System.out.println("[Link] Input "+this.start.getOutput()+", weight "+weight);
 		return this.start.getOutput() * weight;
 	}
@@ -35,7 +35,7 @@ public class Link implements Serializable {
 	 * Randomize the weight of the link
 	 * @param generator
 	 */
-	public void RandomizeWeight(Random generator) {
+	public void randomizeWeight(Random generator) {
         this.weight = generator.nextDouble();
 	}
 
@@ -44,11 +44,11 @@ public class Link implements Serializable {
 	 * Randomize the weight of the link
 	 * @param generator
 	 */
-	public void RandomizeWeight(double min, double max) {
+	public void randomizeWeight(double min, double max) {
         this.weight = min + Math.random() * (max - min);
 	}
 	
-	public void RandomizeWeight() {
+	public void randomizeWeight() {
 		this.weight = Math.random() - 0.5d;
 	}
 }

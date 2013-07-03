@@ -28,31 +28,31 @@ public class Layer implements Serializable {
 		return neurons;
 	}
 	
-	public void Process() {
+	public void process() {
 		//System.out.println("[Layer] Updating neurons");
 		int i=0;;
 		for(Neuron n:this.neurons) {
 			//System.out.println("[Layer] Neuron: " + i);
-			n.Process();
+			n.process();
 			i++;
 		}
 	}
 	
-	public void Reset() {
+	public void reset() {
 		for(Neuron neuron : this.neurons) {
 			neuron.reset();
 		}		
 	}
 
-	public void RandomizeWeights(double minWeight, double maxWeight) {
+	public void randomizeWeights(double minWeight, double maxWeight) {
 		for(Neuron neuron : this.neurons) {
 			neuron.RandomizeWeights(minWeight, maxWeight);
 		}
 	}
 
-	public void RandomizeWeights() {
+	public void randomizeWeights() {
 		for(Neuron neuron : this.neurons) {
-			neuron.RandomizeWeights();
+			neuron.randomizeWeights();
 		}
 	}
 
@@ -62,14 +62,14 @@ public class Layer implements Serializable {
 			for (int j = 0; j < this.neurons.size(); j++) {
 				next_layer.neurons.get(i).addInputLink(this.neurons.get(j));
 			}
-			next_layer.neurons.get(i).PostInit();
+			next_layer.neurons.get(i).postInit();
 		}
 		// backward
 		for (int i = 0; i < this.neurons.size(); i++) {
 			for (int j = 0; j < next_layer.neurons.size(); j++) {
 				this.neurons.get(i).addOutputLink(next_layer.neurons.get(j));
 			}
-			this.neurons.get(i).PostInit();
+			this.neurons.get(i).postInit();
 		}
 	}
 }

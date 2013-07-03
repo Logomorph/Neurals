@@ -1,16 +1,12 @@
 package neuralnet;
 
 
-import java.awt.event.InputEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import nn_input.InputFunction;
 import nn_input.WeightedSum;
-import nn_transfer.Log;
-import nn_transfer.Sigmoid;
-import nn_transfer.Sin;
 import nn_transfer.TransferFunction;
 import nn_transfer.TransferFunctionPicker;
 
@@ -88,7 +84,7 @@ public class Neuron implements Serializable {
 		return outLinks;
 	}
 	
-	public void PostInit() {
+	public void postInit() {
 		if(auto_pick)
 			tfp.InitNeuralNet(inLinks.size());
 	}
@@ -98,23 +94,23 @@ public class Neuron implements Serializable {
 	}
 	
 	// For adaptive transfer functions
-	public void Train() {
+	public void train() {
 		tfp.Train(this.inLinks, netInput, this.output + this.error);
 	}
 
 	/**
 	 * Calculates neuron's output
 	 */
-	public void Process() {
+	public void process() {
 		if (auto_pick) {
 			assert(this.inLinks.size() > 0);
 			
-			this.netInput = this.inputFunc.Process(this.inLinks);
+			this.netInput = this.inputFunc.process(this.inLinks);
 
 			this.output = tfp.Pick(this.inLinks).Process(this.netInput);
 		} else {
 			if ((this.inLinks.size() > 0)) {
-				this.netInput = this.inputFunc.Process(this.inLinks);
+				this.netInput = this.inputFunc.process(this.inLinks);
 				// System.out.println("[Neuron] Net input: " + this.netInput);
 			}
 
@@ -137,13 +133,13 @@ public class Neuron implements Serializable {
 
 	public void RandomizeWeights(double minWeight, double maxWeight) {
 		for(Link connection : this.inLinks) {
-			connection.RandomizeWeight(minWeight, maxWeight);
+			connection.randomizeWeight(minWeight, maxWeight);
 		}
 	}
 	
-	public void RandomizeWeights() {
+	public void randomizeWeights() {
 		for(Link connection : this.inLinks) {
-			connection.RandomizeWeight();
+			connection.randomizeWeight();
 		}		
 	}
 	

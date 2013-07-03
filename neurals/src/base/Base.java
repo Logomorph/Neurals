@@ -9,6 +9,8 @@ import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import nn_patterns.PatternGenerator;
+
 import util.GraphCSVWriter;
 import util.InputReader;
 import aco.ACOAlgorithm;
@@ -16,11 +18,11 @@ import aco.entities.Bin;
 import aco.entities.Item;
 import aco.entities.Resource;
 import dclink_entities.HostData;
-import dclink_if.DCMonitor;
+import dclink_if.DCLink;
 import dclink_if.VMMonitor;
 
 public class Base {
-	private DCMonitor dcMonitor = new DCMonitor();
+	private DCLink dcMonitor = new DCLink();
 	private final static ACOAlgorithm aco = new ACOAlgorithm();
 	private Timer predictionTimer;
 	private Timer acoTimer;
@@ -29,6 +31,7 @@ public class Base {
 	private int predEpoch, acoEpoch;
 	private PredictionQueue itemsQueue;
 	GraphCSVWriter graphCSV;
+	PatternGenerator pgen;
 
 	private static int PREDICTION_INTERVAL = 5000; // ms
 	private static int ACO_INTERVAL = 3000; // ms

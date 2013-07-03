@@ -4,11 +4,20 @@ import java.util.Random;
 
 public class SlopedLine extends PatternGenerator {
 
+	double angle = -1000;
+	public SlopedLine() {
+		
+	}
+	public SlopedLine(double angle) {
+		this.angle = angle;
+	}
 	@Override
 	public double[] generatePattern(int length, double verticalDisplacement) {
 		double[] data = new double[length];
 		Random r = new Random();
-		double angle = ((r.nextInt(180)-90));
+		
+		if(angle == -1000)
+			angle = ((r.nextInt(180)-90));
 		double start = angle < 0 ? 1.0d : 0.0d;
 		System.out.println(angle);
 		double factor = 1.0d / (double)length;

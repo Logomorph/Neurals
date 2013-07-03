@@ -6,24 +6,27 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import nn_data.DataSet;
 import nn_data.DataSetRow;
 
 import neuralnet.Network;
 
 public class Util {
-	public static double Sign(double v) {
+	public static double sign(double v) {
 		if(v<0)
 			return -1;
 		else
 			return 1;
 	}
-	public static double ScaleRange(double in, double oldMin, double oldMax, double newMin, double newMax) {
+	public static double scaleRange(double in, double oldMin, double oldMax, double newMin, double newMax) {
 		double delta = in / oldMax;
 		return delta * newMax;
 	}
 	
-	public static void WriteNetwork(Network net, String file)
+	public static void writeNetwork(Network net, String file)
 			throws IOException {
 		FileOutputStream fileOut = new FileOutputStream(file);
 		ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -32,7 +35,7 @@ public class Util {
 		fileOut.close();
 	}
 
-	public static Network ReadNetwork(String file) throws IOException,
+	public static Network readNetwork(String file) throws IOException,
 			ClassNotFoundException {
 		Network net;
 		FileInputStream fileIn = new FileInputStream(file);
@@ -63,10 +66,22 @@ public class Util {
 
 			dsr.inputData = inp;
 			dsr.outputData = outp;
-			ds.AddRow(dsr);
+			ds.addRow(dsr);
 		}
 		return ds;
 	}
 	
-	public static int[] usage = new int[3];
+	public static List<DataSet> splitDataSet(DataSet ds, int k) {
+		List<DataSet> output = new ArrayList<DataSet>();
+		int rows_per_split = ds.getRowCount() / k;
+		
+		for(int i=0;i<k;i++) {
+			DataSet new_ds = new DataSet();
+			for(int j=i*rows_per_split;j<(i+1)*rows_per_split;j++) {
+				new_ds.addRow(ds.getRow(j));
+			}
+			output.add(new_ds);
+		}
+		return output;
+	}
 }

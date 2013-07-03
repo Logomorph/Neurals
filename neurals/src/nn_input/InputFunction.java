@@ -8,5 +8,5 @@ import neuralnet.Link;
 abstract public class InputFunction implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	abstract public double Process(List<Link> links);
+	abstract public double process(List<Link> links);
 }

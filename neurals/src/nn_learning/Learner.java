@@ -1,6 +1,9 @@
 package nn_learning;
 
+import java.io.IOException;
 import java.util.List;
+
+import util.CSVWriter;
 
 import neuralnet.Layer;
 import neuralnet.Link;
@@ -66,7 +69,7 @@ public class Learner {
 	 * @param ds
 	 * @param maxError
 	 */
-	public void TrainNetwork(DataSet ds, double maxError) {
+	public void trainNetwork(DataSet ds, double maxError) {
 		this.maxError = maxError;
 		this.minErrorChange = 0;
 		this.totalNetworkError = 0d;
@@ -77,9 +80,9 @@ public class Learner {
 	/**
 	 * Does one learn epoch
 	 */
-	public void TrainNetwork(DataSet ds) {
-		for (int i = 0; i < ds.GetRowCount(); i++) {
-			DataSetRow row = ds.GetRow(i);
+	public void trainNetwork(DataSet ds) {
+		for (int i = 0; i < ds.getRowCount(); i++) {
+			DataSetRow row = ds.getRow(i);
 			learnPattern(row);
 		}
 	}
@@ -89,18 +92,32 @@ public class Learner {
 	 * @param ds
 	 */
 	public void doLearningEpoch(DataSet ds) {
+		CSVWriter csvw = new CSVWriter();
+		try {
+			csvw.OpenFile("learning.csv");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		do {
 			this.previousEpochError = this.totalNetworkError;
 			this.totalNetworkError = 0d;
 			this.totalSquaredErrorSum = 0d;
-			for (int i = 0; i < ds.GetRowCount(); i++) {
-				DataSetRow row = ds.GetRow(i);
+			for (int i = 0; i < ds.getRowCount(); i++) {
+				DataSetRow row = ds.getRow(i);
 				learnPattern(row);
 			}
 
 			this.totalNetworkError = this.totalSquaredErrorSum
-					/ ds.GetRowCount();
+					/ ds.getRowCount();
+			csvw.WriteValue(totalNetworkError);
 		} while (!reachedStopCondition());
+		try {
+			csvw.CloseFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -110,7 +127,7 @@ public class Learner {
 	private void learnPattern(DataSetRow r) {
 		double[] input = r.inputData;
 		this.network.setInput(input);
-		this.network.Process();
+		this.network.process();
 
 		double[] output = network.getOutput();
 		double[] desiredOut = r.outputData;
@@ -124,9 +141,9 @@ public class Learner {
 	 * @return
 	 */
 	private boolean reachedStopCondition() {
-		System.out.println("No more error "+(this.totalNetworkError < this.maxError));
+		/*System.out.println("No more error "+(this.totalNetworkError < this.maxError));
 		System.out.println("t1 "+this.totalNetworkError+" t2 "+this.maxError);
-		System.out.println("No more change "+(this.errorChangeStalled()));
+		System.out.println("No more change "+(this.errorChangeStalled()));*/
 		return (this.totalNetworkError < this.maxError)
 				|| this.errorChangeStalled();
 	}
@@ -211,7 +228,7 @@ public class Learner {
 				double nError = calculateHiddenNeuronError(n);
 				n.setError(nError);
 				if (n.isAdaptive())
-					n.Train();
+					n.train();
 				this.updateNeuronWeights(n);
 			}
 		}
@@ -236,7 +253,7 @@ public class Learner {
 		double err = n.getError();
 
 		for (Link l : n.getInputLinks()) {
-			double input = l.GetInput();
+			double input = l.getInput();
 
 			double wChange = learnRate * err * input;
 

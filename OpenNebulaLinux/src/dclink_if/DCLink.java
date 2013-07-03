@@ -16,14 +16,14 @@ import util.XMLParser;
 import dclink_entities.HostData;
 import dclink_impl.MonitorOpenNebula;
 
-public class DCMonitor {
+public class DCLink {
 	private Client oneClient;
 	private TemplatePool tempPool;
 	private List<HostData> hosts = new ArrayList<HostData>();
 	private HostPool hostPool;
 	private ImagePool imagePool;
 
-	public DCMonitor() {
+	public DCLink() {
 		try {
 			oneClient = new Client("oneadmin:oneadmin",
 					"http://localhost:2633/RPC2");

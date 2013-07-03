@@ -10,19 +10,19 @@ public class DataSet {
 		rows = new ArrayList<DataSetRow>();
 	}
 	
-	public void AddRow(DataSetRow r) {
+	public void addRow(DataSetRow r) {
 		rows.add(r);
 	}
 	
-	public void Clear() {
+	public void clear() {
 		rows.clear();
 	}
 	
-	public int GetRowCount() {
+	public int getRowCount() {
 		return rows.size();
 	}
 	
-	public DataSetRow GetRow(int index) {
+	public DataSetRow getRow(int index) {
 		return rows.get(index);
 	}
 	public List<DataSetRow> GetRows() {

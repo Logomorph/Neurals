@@ -34,11 +34,11 @@ public class TransferFunctionPicker implements Serializable{
 		double[] input = new double[links.size()];
 		
 		for (int i=0; i<links.size(); i++) {
-            input[i] = links.get(i).GetWeightedInput();
+            input[i] = links.get(i).getWeightedInput();
         }
 		
 		net.setInput(input);
-		net.Process();
+		net.process();
 		double[] output = net.getOutput();
 		
 		int max = 0;
@@ -90,7 +90,7 @@ public class TransferFunctionPicker implements Serializable{
 		
 		double[] in = new double[input.size()];
 		for(int i=0;i<in.length;i++) {
-			in[i] = input.get(i).GetWeightedInput();
+			in[i] = input.get(i).getWeightedInput();
 		}
 		
 		double[] out = new double[tfs.size()];
@@ -102,12 +102,12 @@ public class TransferFunctionPicker implements Serializable{
 		}
 		dsr.inputData = in;
 		dsr.outputData = out;
-		ds.AddRow(dsr);
+		ds.addRow(dsr);
 		
 		// train the network with the dataset
 		for(int i=0;i<50;i++) {
 			//System.out.println(i);
-			teacher.TrainNetwork(ds);
+			teacher.trainNetwork(ds);
 		}
 	}
 }

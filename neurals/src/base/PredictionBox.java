@@ -5,12 +5,12 @@ import neuralnet.Network;
 import nn_data.DataSet;
 import nn_data.DataSetRow;
 import nn_learning.Learner;
+import nn_patterns.PatternGenerator;
 import nn_patterns.SineWave;
 import nn_transfer.Sin;
 import util.GraphCSVWriter;
 import aco.entities.Item;
 import aco.entities.Resource;
-import dclink_if.VMMonitor;
 
 /*
  * Contains all the neural networks needed for predicting data for one VM
@@ -29,6 +29,7 @@ public class PredictionBox {
 
 	int index;
 	boolean hasData;
+	PatternGenerator pg;
 
 	// stuff for prediction
 	Network mipsNet, ramNet, storeNet, bwNet, runTimeNet;
@@ -55,7 +56,7 @@ public class PredictionBox {
 		double[] inMips = { MIPS_data[index - 2], MIPS_data[index - 1],
 				MIPS_data[index] };
 		mipsNet.setInput(inMips);
-		mipsNet.Process();
+		mipsNet.process();
 
 		resourceDemand[Resource.CPU.getIndex()] = (int) (mipsNet.getOutput()[0] * Item.CPU_MAX);
 
@@ -63,7 +64,7 @@ public class PredictionBox {
 		double[] inRam = { RAM_data[index - 2], RAM_data[index - 1],
 				RAM_data[index] };
 		ramNet.setInput(inRam);
-		ramNet.Process();
+		ramNet.process();
 
 		resourceDemand[Resource.RAM.getIndex()] = (int) (ramNet.getOutput()[0] * Item.RAM_MAX);
 
@@ -71,7 +72,7 @@ public class PredictionBox {
 		double[] inStorage = { STORAGE_data[index - 2],
 				STORAGE_data[index - 1], STORAGE_data[index] };
 		storeNet.setInput(inStorage);
-		storeNet.Process();
+		storeNet.process();
 
 		resourceDemand[Resource.STORAGE.getIndex()] = (int) (storeNet
 				.getOutput()[0] * Item.STORAGE_MAX);
@@ -80,7 +81,7 @@ public class PredictionBox {
 		double[] inBw = { BANDWIDTH_data[index - 2], BANDWIDTH_data[index - 1],
 				BANDWIDTH_data[index] };
 		bwNet.setInput(inBw);
-		bwNet.Process();
+		bwNet.process();
 
 		resourceDemand[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = (int) (bwNet
 				.getOutput()[0] * Item.BANDWIDTH_MAX);
@@ -89,7 +90,7 @@ public class PredictionBox {
 		double[] inRunTime = { RUN_TIME_data[index - 2],
 				RUN_TIME_data[index - 1], RUN_TIME_data[index] };
 		runTimeNet.setInput(inRunTime);
-		runTimeNet.Process();
+		runTimeNet.process();
 
 		resourceDemand[Resource.RUN_TIME.getIndex()] = (int) (runTimeNet
 				.getOutput()[0] * Item.RUN_TIME_MAX);
@@ -163,7 +164,7 @@ public class PredictionBox {
 		Learner l = new Learner(net, 0.8);
 
 		for (int i = 0; i < 50; i++)
-			l.TrainNetwork(ds);
+			l.trainNetwork(ds);
 		System.out.println("Done training");
 
 		return net;
@@ -183,7 +184,7 @@ public class PredictionBox {
 
 			dsr.inputData = inp;
 			dsr.outputData = outp;
-			ds.AddRow(dsr);
+			ds.addRow(dsr);
 		}
 		return ds;
 	}
