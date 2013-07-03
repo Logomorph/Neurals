@@ -81,7 +81,7 @@ public class Base {
 							.getIndex()] + ",");
 		}
 		// //////////
-		aco.setNbOfItems(5);
+		aco.setNbOfItems(dcMonitor.getVMs().size());
 		List<Item> items = new ArrayList<Item>();
 		pboxes = new ArrayList<PredictionBox>();
 		Item i;
@@ -155,8 +155,10 @@ public class Base {
 		System.out.println("Items size: " + items.size());
 		for (int i = 0; i < pboxes.size(); i++) {
 			pboxes.get(i).Update();
-			if (aco.getAvailableResources() != null)
+			if (aco.getAvailableResources() != null) {
+                                //instantiate VM
 				items.add(new Item(pboxes.get(i).getItem()));
+                        }
 		}
 		itemsQueue.add(items);
 

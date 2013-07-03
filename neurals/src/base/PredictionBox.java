@@ -11,6 +11,7 @@ import nn_transfer.Sin;
 import util.GraphCSVWriter;
 import aco.entities.Item;
 import aco.entities.Resource;
+import dclink_if.VMMonitor;
 
 /*
  * Contains all the neural networks needed for predicting data for one VM
@@ -55,7 +56,7 @@ public class PredictionBox {
 		double[] inMips = { CPU_data[index - 2], CPU_data[index - 1],
 				CPU_data[index] };
 		cpuNet.setInput(inMips);
-		cpuNet.Process();
+		cpuNet.process();
 
 		resourceDemand[Resource.CPU.getIndex()] = (int) (cpuNet.getOutput()[0] * Item.CPU_MAX);
 

@@ -156,39 +156,13 @@ public class ACOAlgorithm {
 				copyOfItemSet.clear();
 				for (Item item : items) {
 					copyOfItemSet.add(item);
-//					System.out.println("items: " + items.indexOf(item)
-//					+ " : "
-//					+ item.getResourceDemand()[Resource.CPU.getIndex()] + ", "
-//					+ item.getResourceDemand()[Resource.RAM.getIndex()] + ", "
-//				    + item.getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
-//				    + item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
-//				    + item.getResourceDemand()[Resource.RUN_TIME.getIndex()]);
-		
 				}
 				v = 0;
 				
 				while (copyOfItemSet.size() > 0 && v < NB_OF_BINS) {
-//					for (Item item : copyOfItemSet) {
-//						System.out.println("copy itemset: " + items.indexOf(item)
-//								+ " : "
-//								+ item.getResourceDemand()[Resource.CPU.getIndex()] + ", "
-//								+ item.getResourceDemand()[Resource.RAM.getIndex()] + ", "
-//							    + item.getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
-//							    + item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
-//							    + item.getResourceDemand()[Resource.RUN_TIME.getIndex()]);
-//					}
-					
-					setOfQualifiedItems = determineSetOfQualifiedItems(v,
+				setOfQualifiedItems = determineSetOfQualifiedItems(v,
 							copyOfItemSet);
-//					for (Item item : setOfQualifiedItems) {
-//						System.out.println("qualified: " + items.indexOf(item)
-//								+ " : "
-//								+ item.getResourceDemand()[Resource.CPU.getIndex()] + ", "
-//								+ item.getResourceDemand()[Resource.RAM.getIndex()] + ", "
-//							    + item.getResourceDemand()[Resource.STORAGE.getIndex()] + ", "
-//							    + item.getResourceDemand()[Resource.NETWORK_TRANSFER_SPEED.getIndex()] + ", "
-//							    + item.getResourceDemand()[Resource.RUN_TIME.getIndex()]);
-//					}
+
 					if (setOfQualifiedItems.size() > 0) {
 						double sum = 0.0;
 						for (Item item : setOfQualifiedItems) {
