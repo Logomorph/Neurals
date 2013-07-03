@@ -3,7 +3,6 @@ package base;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
@@ -44,8 +43,8 @@ public class Base {
 
 		itemsQueue = new PredictionQueue();
 
-		LinkedList<Integer> numbers = (LinkedList<Integer>) InputReader
-				.readData();
+//		LinkedList<Integer> numbers = (LinkedList<Integer>) InputReader
+//				.readData();
 
 		// /////////////////
 		ACOAlgorithm.NB_OF_BINS = dcMonitor.getHosts().size();
@@ -56,8 +55,7 @@ public class Base {
 		resourceCapacity[Resource.CPU.getIndex()] = hosts.get(0).getMaxCPU();
 		resourceCapacity[Resource.RAM.getIndex()] = (int) Math.ceil(hosts.get(0).getMaxMemory()/1024);
 		resourceCapacity[Resource.STORAGE.getIndex()] = 250; // 250gb
-		resourceCapacity[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = numbers
-				.get(5); // 100 mb/s
+		resourceCapacity[Resource.NETWORK_TRANSFER_SPEED.getIndex()] = 100; //numbers.get(5); // 100 mb/s
 
 		aco.initalizeBinsData(resourceCapacity);
 
@@ -80,7 +78,7 @@ public class Base {
 							.getIndex()] + ",");
 		}
 		// //////////
-		aco.setNbOfItems(numbers.get(1));
+		aco.setNbOfItems(5);
 		List<Item> items = new ArrayList<Item>();
 		pboxes = new ArrayList<PredictionBox>();
 		Item i;

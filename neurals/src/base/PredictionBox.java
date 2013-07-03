@@ -20,8 +20,7 @@ public class PredictionBox {
 	int[] resourceCapacity;
 
 	// this stuff will actually come from open nebula in real time
-	double[] MIPS_data;
-	double[] CORES_data;
+	double[] CPU_data;
 	double[] RAM_data;
 	double[] STORAGE_data;
 	double[] BANDWIDTH_data;
@@ -31,7 +30,7 @@ public class PredictionBox {
 	boolean hasData;
 
 	// stuff for prediction
-	Network mipsNet, ramNet, storeNet, bwNet, runTimeNet;
+	Network cpuNet, ramNet, storeNet, bwNet, runTimeNet;
 
 	GraphCSVWriter graphCSV;
 	VMMonitor vmm;
@@ -51,13 +50,13 @@ public class PredictionBox {
 	public void Update() {
 		int[] resourceDemand = new int[Resource.values().length];
 
-		// MIPS NN
-		double[] inMips = { MIPS_data[index - 2], MIPS_data[index - 1],
-				MIPS_data[index] };
-		mipsNet.setInput(inMips);
-		mipsNet.Process();
+		// CPU NN
+		double[] inMips = { CPU_data[index - 2], CPU_data[index - 1],
+				CPU_data[index] };
+		cpuNet.setInput(inMips);
+		cpuNet.Process();
 
-		resourceDemand[Resource.CPU.getIndex()] = (int) (mipsNet.getOutput()[0] * Item.CPU_MAX);
+		resourceDemand[Resource.CPU.getIndex()] = (int) (cpuNet.getOutput()[0] * Item.CPU_MAX);
 
 		// RAM NN
 		double[] inRam = { RAM_data[index - 2], RAM_data[index - 1],
@@ -105,7 +104,7 @@ public class PredictionBox {
 					resourceDemand[Resource.RUN_TIME.getIndex()]);
 		}
 
-		if (index < MIPS_data.length) {
+		if (index < CPU_data.length) {
 			hasData = true;
 			index++;
 		} else {
@@ -124,8 +123,7 @@ public class PredictionBox {
 	// all this is temporary
 	private void populateData() {
 		SineWave swg = new SineWave();
-		MIPS_data = swg.generatePattern(1000, 0);
-		CORES_data = swg.generatePattern(1000, 0);
+		CPU_data = swg.generatePattern(1000, 0);
 		RAM_data = swg.generatePattern(1000, 0);
 		STORAGE_data = swg.generatePattern(1000, 0);
 		BANDWIDTH_data = swg.generatePattern(1000, 0);
@@ -134,7 +132,7 @@ public class PredictionBox {
 	}
 
 	private void createNeuralNets() {
-		mipsNet = createAndTrainNetwork(MIPS_data);
+		cpuNet = createAndTrainNetwork(CPU_data);
 		ramNet = createAndTrainNetwork(RAM_data);
 		storeNet = createAndTrainNetwork(STORAGE_data);
 		bwNet = createAndTrainNetwork(BANDWIDTH_data);

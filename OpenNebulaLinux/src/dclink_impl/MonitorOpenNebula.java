@@ -82,16 +82,18 @@ public class MonitorOpenNebula implements VMMonitor {
 
 			// Should be parsed out of info, but the parsing fails, for some
 			// reason
-			Reader in = new StringReader(vm.monitoring().getMessage());
+			Reader in = new StringReader(vm.info().getMessage());
 			Document doc = builder.build(in);
 			Element root = doc.getRootElement();
-			Element vme = root.getChild("VM");
+                        System.out.println(vm.getId());
+			//Element vme = root.getChild("VM");
 
-			Element memory = vme.getChild("MEMORY");
+                        System.out.println(root.getText());
+			Element memory = root.getChild("MEMORY");
 			ram = Integer.parseInt(memory.getValue());
 			System.out.println(ram);
 
-			Element template = vme.getChild("TEMPLATE");
+			Element template = root.getChild("TEMPLATE");
 			Element nic = template.getChild("NIC");
 			Element ip = nic.getChild("IP");
 			CDATA c = (CDATA) ip.getContent().get(1);
