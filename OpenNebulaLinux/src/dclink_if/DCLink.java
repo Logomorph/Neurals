@@ -37,7 +37,7 @@ public class DCLink {
 			System.out.println(imagePool.getById(65).info().getMessage());
 			
 			XMLParser parser = new XMLParser();
-			setHosts(parser.readXML("host.txt"));
+			setHosts(parser.readXML("hosts.txt"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

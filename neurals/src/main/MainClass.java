@@ -23,17 +23,17 @@ import base.Base;
 public class MainClass {
 	public static void main(String[] args) {
 		// RunACO();
-		//RunNNACO();
-		RunNN();
+		RunNNACO();
+		//RunNN();
 		//DCMonitor dcm = new DCMonitor();
 		//dcm.getVMMonitor(399);
 	}
 
-	/*private static void RunNNACO() {
+	private static void RunNNACO() {
 		Base b = new Base();
 		b.start();
 
-	}*/
+	}
 
 	// private static void RunACO() {
 	// LinkedList<Integer> numbers = (LinkedList<Integer>) InputReader
