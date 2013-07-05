@@ -4,7 +4,7 @@ public class Sin extends TransferFunction {
 
 	@Override
 	public double Process(double in) {
-		return Math.sin(in);
+		return Math.sin(in) < 0? (Math.sin(in))*(-1) : Math.sin(in);
 	}
     
     @Override

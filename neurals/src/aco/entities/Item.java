@@ -16,7 +16,7 @@ public class Item {
 	public static final int RAM_MAX = 5000;
 	public static final int STORAGE_MAX = 50;
 	public static final int BANDWIDTH_MAX = 10;
-	public static final int RUN_TIME_MAX = 10000;
+	public static final int RUN_TIME_MAX = 20000;
 
 	private Timer endRunTime;
 	private Bin deploymentBin;

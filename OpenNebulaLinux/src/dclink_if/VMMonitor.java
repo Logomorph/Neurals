@@ -18,5 +18,8 @@ public interface VMMonitor {
 	public List<MonitorData> getRAMData();
 	public List<MonitorData> getNETData();
 	public String getIP();
+        public void deploy(int hostID);
 	public void migrate(int hostID);
+        public void destroy();
+        public int getID();
 }

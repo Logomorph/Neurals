@@ -15,6 +15,9 @@ import org.opennebula.client.vm.VirtualMachinePool;
 import util.XMLParser;
 import dclink_entities.HostData;
 import dclink_impl.MonitorOpenNebula;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+import org.opennebula.client.OneResponse;
+import org.opennebula.client.template.Template;
 
 public class DCLink {
 	private Client oneClient;
@@ -34,7 +37,7 @@ public class DCLink {
 			
 			imagePool = new ImagePool(oneClient);
 			imagePool.info();
-			System.out.println(imagePool.getById(65).info().getMessage());
+			//System.out.println(imagePool.getById(65).info().getMessage());
 			
 			XMLParser parser = new XMLParser();
 			setHosts(parser.readXML("hosts.txt"));
@@ -71,6 +74,15 @@ public class DCLink {
 		}
 		return null;
 	}
+        private static int VM_TEMPLATE_ID = 75;
+        public VMMonitor instatiate() {
+            
+            Template t = tempPool.getById(VM_TEMPLATE_ID);
+            OneResponse orp = t.instantiate();            
+            VirtualMachine vm = new VirtualMachine(Integer.parseInt(orp.getMessage()), oneClient);
+            vm.info();
+            return new MonitorOpenNebula(vm,tempPool,imagePool,oneClient);
+        }
 
 	private void setHosts(List<HostData> hosts) {
 		this.hosts = hosts;

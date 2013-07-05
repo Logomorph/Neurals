@@ -13,20 +13,25 @@ import nn_patterns.Line;
 import nn_patterns.SineWave;
 import nn_patterns.SlopedLine;
 import nn_transfer.Linear;
-import nn_transfer.Sigmoid;
-import nn_transfer.Sin;
 import nn_transfer.Tanh;
 import util.CSVWriter;
 import util.Util;
 import base.Base;
+import dclink_if.DCLink;
+import dclink_if.VMMonitor;
 
 public class MainClass {
 	public static void main(String[] args) {
 		// RunACO();
 		RunNNACO();
 		//RunNN();
-		//DCMonitor dcm = new DCMonitor();
-		//dcm.getVMMonitor(399);
+//		DCLink dcm = new DCLink();
+		/*VMMonitor vmm1 = dcm.getVMMonitor(402);
+		VMMonitor vmm2 = dcm.getVMMonitor(403);
+                vmm1.migrate(1);
+                vmm2.migrate(1);*/
+//                VMMonitor vmm = dcm.instatiate();
+//                vmm.deploy(1);
 	}
 
 	private static void RunNNACO() {
